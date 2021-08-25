@@ -30,7 +30,11 @@ app.use('/consent', consent)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
-  next(new Error('Not Found'))
+  res.status(404).json({
+    error: 'Not found',
+    statusCode: 404,
+    result: "error"
+  })
 })
 
 // error handlers
