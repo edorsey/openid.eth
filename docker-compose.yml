@@ -28,21 +28,22 @@ services:
       - HYDRA_ADMIN_URL=http://hydra:4445
 
   hydra:
-    image: oryd/hydra:v1.10.2
+    image: oryd/hydra:latest
+    # build:
+    #  context: ../hydra
+    #  dockerfile: .docker/Dockerfile-build
     ports:
       - "4444:4444" # Public port
       - "4445:4445" # Admin port
       - "5555:5555" # Port for hydra token user
-    command: serve -c /etc/config/hydra/hydra.yml all --dangerous-force-http
+    command: serve --config /etc/config/hydra/hydra.yml all --dangerous-force-http
     volumes:
       - ./config/hydra:/etc/config/hydra
     environment:
       - OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES=public
       - DSN=postgres://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?sslmode=disable&max_conns=20&max_idle_conns=4
     restart: unless-stopped
-    depends_on:
-      - hydra-migrate
-    extra_hosts: 
+    extra_hosts:
       - "hydra.openid.local:192.168.20.223"
     depends_on:
       postgres:
@@ -51,10 +52,10 @@ services:
         condition: service_started
 
   hydra-migrate:
-    image: oryd/hydra:v1.10.2
+    image: oryd/hydra:latest
     environment:
       - DSN=postgres://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?sslmode=disable&max_conns=20&max_idle_conns=4
-    command: migrate -c /etc/config/hydra/hydra.yml sql -e --yes
+    command: migrate --config /etc/config/hydra/hydra.yml sql -e --yes
     volumes:
       - ./config/hydra:/etc/config/hydra
     restart: on-failure
@@ -78,4 +79,3 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-

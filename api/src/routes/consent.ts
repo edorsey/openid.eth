@@ -71,6 +71,10 @@ router.get('/', csrfProtection, asyncRoute(async (req: any, res: any) => {
         // ORY Hydra checks if requested audiences are allowed by the client, so we can simply echo this.
         grant_access_token_audience: consentRequest.requested_access_token_audience,
 
+        remember: true,
+
+        remember_for: 0,
+
         // The session allows us to set session data for id and access tokens
         session: {
           // This data will be available when introspecting the token. Try to avoid sensitive information here,
@@ -91,8 +95,12 @@ router.get('/', csrfProtection, asyncRoute(async (req: any, res: any) => {
           }
         }
       })
+
+      console.log("ACCEPT CONSENT REQUEST", acceptConsentRequestResponse.redirect_to, acceptConsentRequestResponse)
       
-      res.redirect(`${acceptConsentRequestResponse.redirect_to}&code_challenge=${challenge}&code_challenge_method=S256`)
+      res.redirect(acceptConsentRequestResponse.redirect_to)
+
+      return
   }
 
   // If consent can't be skipped we MUST show the consent UI.
@@ -202,11 +210,11 @@ router.post('/', csrfProtection, asyncRoute(async (req: any, res: any) => {
     remember: Boolean(req.body.remember),
 
     // When this "remember" sesion expires, in seconds. Set this to 0 so it will never expire.
-    remember_for: 3600
+    remember_for: 0
   })
   
           // All we need to do now is to redirect the user back to hydra!
-  res.redirect(`${acceptConsentRequestResponse.redirect_to}&code_challenge=${challenge}&code_challenge_method=S256`)
+  res.redirect(acceptConsentRequestResponse.redirect_to)
 }))
 
 export default router

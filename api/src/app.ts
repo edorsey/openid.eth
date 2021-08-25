@@ -3,6 +3,7 @@ import path from 'path'
 import logger from 'morgan'
 import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
+import session from 'express-session'
 
 import routes from './routes'
 import login from './routes/login'
@@ -20,8 +21,14 @@ app.set('view engine', 'pug')
 app.use(logger('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
-app.use(cookieParser())
+app.use(cookieParser(process.env.SESSION_SECRET))
 app.use(express.static(path.join(__dirname, 'public')))
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  rolling: true,
+  resave: true,
+}))
 
 app.use('/', routes)
 app.use('/login', login)
