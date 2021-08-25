@@ -11,7 +11,9 @@ const provider = new ethers.providers.InfuraProvider("homestead", {
 });
 
 // Sets up csrf protection
-const csrfProtection = csrf({ cookie: true })
+const csrfProtection = csrf({ 
+  cookie: true
+})
 const router = express.Router()
 
 const asyncRoute = (route: any) => {
@@ -50,6 +52,8 @@ router.get('/', csrfProtection, asyncRoute(async (req: any, res: any) => {
     })
           
     res.redirect(redirectTo)
+
+    return
   }
 
   // If authentication can't be skipped we MUST show the login UI.
@@ -121,7 +125,7 @@ router.post('/', csrfProtection, asyncRoute(async (req: any, res: any) => {
       // If that variable is not set, the ACR value will be set to the default passed here ('0')
       acr: oidcConformityMaybeFakeAcr(loginRequest, '0')
     })
-       
+  
   res.redirect(redirectTo)
 
 
