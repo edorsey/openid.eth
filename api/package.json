@@ -37,7 +37,8 @@
     "querystring": "^0.2.0",
     "serve-favicon": "^2.5.0",
     "typescript": "^3.7.5",
-    "url-join": "^4.0.1"
+    "url-join": "^4.0.1",
+    "webauthn": "^0.2.0"
   },
   "devDependencies": {
     "@types/express-session": "^1.17.4",

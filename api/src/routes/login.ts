@@ -4,7 +4,6 @@ import urljoin from 'url-join'
 import csrf from 'csurf'
 import { ethers } from 'ethers'
 import { hydraAdmin } from '../config'
-import { oidcConformityMaybeFakeAcr } from './stub/oidc-cert'
 
 const provider = new ethers.providers.InfuraProvider("homestead", {
   projectId: process.env.INFURA_PROJECT_ID,
@@ -161,7 +160,7 @@ router.post('/', csrfProtection, asyncRoute(async (req: any, res: any) => {
       // and this only exists to fake a login system which works in accordance to OpenID Connect.
       //
       // If that variable is not set, the ACR value will be set to the default passed here ('0')
-      acr: oidcConformityMaybeFakeAcr(loginRequest, '0')
+      acr: '0'
     })
 
   req.session.sub = address

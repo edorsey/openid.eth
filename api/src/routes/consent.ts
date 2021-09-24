@@ -4,7 +4,6 @@ import urljoin from 'url-join'
 import csrf from 'csurf'
 import { ethers } from 'ethers'
 import { hydraAdmin } from '../config'
-import { oidcConformityMaybeFakeSession } from './stub/oidc-cert'
 import { ConsentRequestSession } from '@oryd/hydra-client'
 
 const provider = new ethers.providers.InfuraProvider("homestead", {
@@ -200,7 +199,7 @@ router.post('/', csrfProtection, asyncRoute(async (req: any, res: any) => {
     //
     // If that variable is not set, the session will be used as-is.
     
-    session: oidcConformityMaybeFakeSession(grantScope, consentRequest, session),
+    session,
 
     // ORY Hydra checks if requested audiences are allowed by the client, so we can simply echo this.
     grant_access_token_audience: consentRequest.requested_access_token_audience,

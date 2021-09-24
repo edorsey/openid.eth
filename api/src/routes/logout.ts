@@ -57,11 +57,15 @@ router.post('/', csrfProtection, (req, res, next) => {
   hydraAdmin
     .acceptLogoutRequest(challenge)
     .then(({ data: body }) => {
-      // All we need to do now is to redirect the user back to hydra!
-      res.redirect(String(body.redirect_to))
+      req.session.destroy(() => {
+        // All we need to do now is to redirect the user back to hydra!
+        res.redirect(String(body.redirect_to))
+      })
     })
     // This will handle any error that happens when making HTTP calls to hydra
     .catch(next)
+
+  req.session
 })
 
 export default router

@@ -4,6 +4,7 @@ import logger from 'morgan'
 import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
 import session from 'express-session'
+import WebAuthn from 'webauthn'
 
 import routes from './routes'
 import login from './routes/login'
@@ -29,6 +30,30 @@ app.use(session({
   rolling: true,
   resave: true,
 }))
+
+const webauthn = new WebAuthn({
+  origin: 'https://auth.decacube.com',
+  usernameField: 'username',
+  userFields: {
+    username: 'username',
+    name: 'displayName',
+  },
+  // OR
+  // store: {
+  //   put: async (id, value) => {/* return <void> */},
+  //   get: async (id) => {/* return User */},
+  //   search: async (search) => {/* return { [username]: User } */},
+  //   delete: async (id) => {/* return boolean */},
+  // },
+  rpName: 'auth.decacube.com',
+  enableLogging: true
+})
+const webauthnRouter = webauthn.initialize()
+webauthnRouter.get('/', (req, res) => {
+  res.render('webauthn')
+})
+app.use('/webauthn', webauthn.initialize())
+
 
 app.use('/', routes)
 app.use('/login', login)
