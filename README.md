@@ -14,8 +14,9 @@ Allow users to pay ETH to [create an OpenID Connect client](https://www.ory.sh/h
 docker-compose exec hydra \
     hydra clients create \
     --endpoint http://localhost:4445/ \
-    --id example-client4 \
-    --secret example-secret \
-    --grant-types client_credentials,authorization_code \
-    --callbacks http://localhost:4001/callback
+    --id grafana11 \
+    --scope openid \
+    --grant-types authorization_code \
+    --token-endpoint-auth-method none \
+    --callbacks https://monitor.dorsey.io/login/generic_oauth
 ```

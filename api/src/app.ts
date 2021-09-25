@@ -4,12 +4,13 @@ import logger from 'morgan'
 import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
 import session from 'express-session'
-import WebAuthn from 'webauthn'
 
 import routes from './routes'
+import signup from './routes/signup'
 import login from './routes/login'
 import logout from './routes/logout'
 import consent from './routes/consent'
+import webauthn from './routes/webauthn'
 
 const app = express()
 
@@ -54,18 +55,19 @@ webauthnRouter.get('/', (req, res) => {
 })
 app.use('/webauthn', webauthn.initialize())
 
-
 app.use('/', routes)
+app.use('/signup', signup)
 app.use('/login', login)
 app.use('/logout', logout)
 app.use('/consent', consent)
+app.use('/webauthn', webauthn)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
   res.status(404).json({
     error: 'Not found',
     statusCode: 404,
-    result: "error"
+    result: 'error'
   })
 })
 

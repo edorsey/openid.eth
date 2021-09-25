@@ -12,7 +12,7 @@ app.use(
     clientSecret: process.env.CLIENT_SECRET,
     clientAuthMethod: "client_secret_basic",
     secret: process.env.OIDC_SECRET,
-    idpLogout: true,
+    idpLogout: false,
     authorizationParams: {
       response_type: "code",
       scope: "openid",
@@ -21,7 +21,7 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  console.log(req.oidc.user);
+  console.log(req.oidc.accessToken, req.oidc.idToken, req.oidc.user);
   res.send(`Hello, ${req.oidc.user.sub}`);
 });
 

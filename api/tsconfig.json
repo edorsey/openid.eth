@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "resolveJsonModule": true,
+    "noImplicitAny": false,
     "target": "es5",
     "module": "commonjs",
     "lib": [
@@ -11,7 +12,7 @@
     "rootDir": "./src",
     "strict": true,
     "typeRoots": [
-      "./typings"
+      "src/typings"
     ],
     "esModuleInterop": true
   },
