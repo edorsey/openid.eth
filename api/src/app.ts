@@ -11,6 +11,8 @@ import login from './routes/login'
 import logout from './routes/logout'
 import consent from './routes/consent'
 import webauthn from './routes/webauthn'
+import profile from './routes/profile'
+import addDevice from './routes/add-device'
 
 const app = express()
 
@@ -61,6 +63,8 @@ app.use('/login', login)
 app.use('/logout', logout)
 app.use('/consent', consent)
 app.use('/webauthn', webauthn)
+app.use('/profile', profile)
+app.use('/add-device', addDevice)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

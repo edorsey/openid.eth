@@ -1,36 +1,3 @@
-import Client from '/js/modules/webauthn/client/Client.js'
-
-const client = new Client({ pathPrefix: '/webauthn' })
-
-await client.register({
-  username: 'edorsey.eth',
-  name: 'Eric Dorsey'
-})
-
-// ...
-
-await client.login({ username: 'edorsey.eth' })
-
-const publicKey = {
-  challenge: '',
-  rp: {
-    name: 'Decacube',
-    id: 'auth.decacube.com',
-    icon: 'https://auth.decacube.com/login.ico'
-  },
-  user: {
-    id: new Uint8Array(16),
-    name: 'jdoe@example.com',
-    displayName: 'John Doe'
-  },
-  pubKeyCredParams: [
-    {
-      type: 'public-key',
-      alg: -7
-    }
-  ]
-}
-
 /**
  * Convert a hex string to an ArrayBuffer.
  *
@@ -68,16 +35,16 @@ function hexStringToArrayBuffer(hexString) {
   return array.buffer
 }
 
-const credential = await navigator.credentials.create({ publicKey })
-
 async function addDevice(profile, challenge) {
-  const credential = await navigator.credentials.create({
+  const encoder = new TextEncoder()
+
+  const opts = {
     publicKey: {
-      challenge,
+      challenge: encoder.encode(challenge),
       rp: {
         name: 'Decacube',
-        id: 'auth.decacube.com',
-        icon: 'https://auth.decacube.com/login.ico'
+        id: 'localhost',
+        icon: 'http://localhost:1999/login.ico'
       },
       user: {
         id: hexStringToArrayBuffer(profile.address),
@@ -91,5 +58,18 @@ async function addDevice(profile, challenge) {
         }
       ]
     }
-  })
+  }
+  console.log(opts)
+  const credential = await navigator.credentials.create(opts)
+  console.log('CRED', credential)
 }
+
+const addDeviceButton = document.querySelector('#addDevice')
+const deviceChallengeInput = document.querySelector('#deviceChallenge')
+
+console.log(addDeviceButton, deviceChallengeInput)
+
+addDeviceButton.addEventListener('click', (e) => {
+  console.log('adding device', deviceChallengeInput.value)
+  addDevice(window.profile, deviceChallengeInput.value)
+})

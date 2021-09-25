@@ -5,7 +5,7 @@ if (typeof window.ethereum !== 'undefined') {
 
   const ethereumButton = document.querySelector('#enableEthereum')
 
-  const challengeInput = document.querySelector('#challenge')
+  const idChallengeInput = document.querySelector('#idChallenge')
   const addressInput = document.querySelector('#address')
   const ensInput = document.querySelector('#ens')
   const emailInput = document.querySelector('#email')
@@ -36,8 +36,10 @@ if (typeof window.ethereum !== 'undefined') {
       twitterInput.value = twitter
     }
 
+    console.log('WTF', idChallengeInput, idChallengeInput.value)
+
     const signer = provider.getSigner()
-    const signature = await signer.signMessage(challengeInput.value)
+    const signature = await signer.signMessage(idChallengeInput.value)
 
     signatureInput.value = signature
   })

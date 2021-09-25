@@ -17,7 +17,16 @@ block content
 
           form(action=action, method='POST')
             input(type='hidden', name='_csrf', value=csrfToken)
-            input#challenge(type='hidden', name='challenge', value=challenge)
+            input#loginChallenge(
+              type='hidden',
+              name='loginChallenge',
+              value=loginChallenge
+            )
+            input#idChallenge(
+              type='hidden',
+              name='idChallenge',
+              value=idChallenge
+            )
 
             .field
               label.label(for='address') Address

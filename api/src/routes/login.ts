@@ -4,6 +4,8 @@ import urljoin from 'url-join'
 import csrf from 'csurf'
 import { ethers } from 'ethers'
 import { hydraAdmin } from '../config'
+import generateChallenge from '../helpers/generate-challenge'
+import asyncRoute from '../helpers/async-route'
 
 const provider = new ethers.providers.InfuraProvider("homestead", {
   projectId: process.env.INFURA_PROJECT_ID,
@@ -15,16 +17,6 @@ const csrfProtection = csrf({
 })
 const router = express.Router()
 
-const asyncRoute = (route: any) => {
-  return async (req: any, res: any, next: any) => {
-    try {
-      await route(req, res, next)
-    } catch (err) {
-      return next(err)
-    }
-  }
-}
-
 router.get(
   '/',
   csrfProtection,
@@ -33,14 +25,14 @@ router.get(
     const query = url.parse(req.url, true).query
 
     // The challenge is used to fetch information about the login request from ORY Hydra.
-    const challenge = Array.isArray(query.login_challenge)
+    const loginChallenge = Array.isArray(query.login_challenge)
       ? query.login_challenge[0]
       : query.login_challenge
 
     let loginRequest
 
-    if (challenge) {
-      const { data } = await hydraAdmin.getLoginRequest(challenge)
+    if (loginChallenge) {
+      const { data } = await hydraAdmin.getLoginRequest(loginChallenge)
       loginRequest = data
 
       // If hydra was already able to authenticate the user, skip will be true and we do not need to re-authenticate
@@ -53,7 +45,7 @@ router.get(
         // (e.g. your arch-enemy logging in...)
         const {
           data: { redirect_to: redirectTo }
-        } = await hydraAdmin.acceptLoginRequest(challenge, {
+        } = await hydraAdmin.acceptLoginRequest(loginChallenge, {
           // All we need to do is to confirm that we indeed want to log in the user.
           subject: String(loginRequest.subject),
 
@@ -69,10 +61,14 @@ router.get(
       }
     }
 
+    const idChallenge = await generateChallenge()
+    req.session.idChallenge = idChallenge
+
     // If authentication can't be skipped we MUST show the login UI.
     res.render('login', {
       csrfToken: req.csrfToken(),
-      challenge: challenge,
+      loginChallenge,
+      idChallenge,
       action: urljoin(process.env.BASE_URL || '', '/login'),
       hint: loginRequest?.oidc_context?.login_hint || ''
     })
@@ -83,15 +79,15 @@ router.post(
   '/',
   csrfProtection,
   asyncRoute(async (req: any, res: any) => {
-    // The challenge is now a hidden input field, so let's take it from the request body instead
-    const challenge = req.body.challenge
+    // The loginChallenge is now a hidden input field, so let's take it from the request body instead
+    const { idChallenge, loginChallenge } = req.body
 
     // Let's see if the user decided to accept or reject the consent request..
-    if (req.body.submit === 'Deny access') {
+    if (loginChallenge && req.body.submit === 'Deny access') {
       // Looks like the consent request was denied by the user
       const {
         data: { redirect_to: redirectTo }
-      } = await hydraAdmin.rejectLoginRequest(challenge, {
+      } = await hydraAdmin.rejectLoginRequest(loginChallenge, {
         error: 'access_denied',
         error_description: 'The resource owner denied the request'
       })
@@ -103,49 +99,80 @@ router.post(
     // for this!
     if (!req.body.address || !req.body.signature) {
       // Looks like the user provided invalid credentials, let's show the ui again...
+      const idChallenge = await generateChallenge()
+      req.session.idChallenge = idChallenge
 
       res.render('login', {
         csrfToken: req.csrfToken(),
-        challenge: challenge,
+        loginChallenge: loginChallenge,
+        idChallenge,
         error: 'The username / password combination is not correct'
       })
 
       return
     }
 
-    const address = ethers.utils.verifyMessage(challenge, req.body.signature)
+    const address = ethers.utils.verifyMessage(idChallenge, req.body.signature)
 
-    // Seems like the user authenticated! Let's tell hydra...
-    const { data: loginRequest } = await hydraAdmin.getLoginRequest(challenge)
+    if (idChallenge !== req.session.idChallenge) {
+      throw new Error('idChallenge did not match')
+    }
 
+    const ensName = await provider.lookupAddress(address)
 
-    const {
-      data: { redirect_to: redirectTo, ...data }
-    } = await hydraAdmin.acceptLoginRequest(challenge, {
-      // Subject is an alias for user ID. A subject can be a random string, a UUID, an email address, ....
-      subject: address,
+    const resolver = await provider.getResolver(ensName)
 
-      // This tells hydra to remember the browser and automatically authenticate the user in future requests. This will
-      // set the "skip" parameter in the other route to true on subsequent requests!
-      remember: true,
+    const email = await resolver.getText('email')
+    const url = await resolver.getText('url')
+    const twitter = await resolver.getText('com.twitter')
 
-      // When the session expires, in seconds. Set this to 0 so it will never expire.
-      remember_for: 0,
+    req.session.profile = {
+      idChallenge,
+      idSignature: req.body.signature,
+      ensName,
+      address,
+      email,
+      url,
+      twitter,
+      authenticatedAt: new Date()
+    }
 
-      // Sets which "level" (e.g. 2-factor authentication) of authentication the user has. The value is really arbitrary
-      // and optional. In the context of OpenID Connect, a value of 0 indicates the lowest authorization level.
-      // acr: '0',
-      //
-      // If the environment variable CONFORMITY_FAKE_CLAIMS is set we are assuming that
-      // the app is built for the automated OpenID Connect Conformity Test Suite. You
-      // can peak inside the code for some ideas, but be aware that all data is fake
-      // and this only exists to fake a login system which works in accordance to OpenID Connect.
-      //
-      // If that variable is not set, the ACR value will be set to the default passed here ('0')
-      acr: '0'
-    })
+    if (loginChallenge) {
+      // Seems like the user authenticated! Let's tell hydra...
+      const { data: loginRequest } = await hydraAdmin.getLoginRequest(
+        loginChallenge
+      )
 
-    res.redirect(redirectTo)
+      const {
+        data: { redirect_to: redirectTo, ...data }
+      } = await hydraAdmin.acceptLoginRequest(loginChallenge, {
+        // Subject is an alias for user ID. A subject can be a random string, a UUID, an email address, ....
+        subject: address,
+
+        // This tells hydra to remember the browser and automatically authenticate the user in future requests. This will
+        // set the "skip" parameter in the other route to true on subsequent requests!
+        remember: true,
+
+        // When the session expires, in seconds. Set this to 0 so it will never expire.
+        remember_for: 0,
+
+        // Sets which "level" (e.g. 2-factor authentication) of authentication the user has. The value is really arbitrary
+        // and optional. In the context of OpenID Connect, a value of 0 indicates the lowest authorization level.
+        // acr: '0',
+        //
+        // If the environment variable CONFORMITY_FAKE_CLAIMS is set we are assuming that
+        // the app is built for the automated OpenID Connect Conformity Test Suite. You
+        // can peak inside the code for some ideas, but be aware that all data is fake
+        // and this only exists to fake a login system which works in accordance to OpenID Connect.
+        //
+        // If that variable is not set, the ACR value will be set to the default passed here ('0')
+        acr: '5'
+      })
+
+      res.redirect(redirectTo)
+    }
+
+    res.redirect('/profile')
 
     // You could also deny the login request which tells hydra that no one authenticated!
     // hydra.rejectLoginRequest(challenge, {

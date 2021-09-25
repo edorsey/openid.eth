@@ -1,0 +1,40 @@
+extends layout
+
+block content
+  h1.has-text-weight-semibold.is-size-2.has-text-centered.mb-4.mt-4 Add Device
+
+  div
+    form(action=action, method='POST')
+      input(type='hidden', name='_csrf', value=csrfToken)
+      input#deviceChallenge(
+        type='hidden',
+        name='deviceChallenge',
+        value=deviceChallenge
+      )
+      input#idChallenge(type='hidden', name='idChallenge', value=idChallenge)
+
+      .field
+        label.label(for='address') Address
+        .control
+          input#address.input(name='address', type='text', value=address)
+
+      .field
+        label.label(for='address') ENS
+        .control
+          input#address.input(name='ensName', type='text', value=ensName)
+
+    button#addDevice.button Add device
+
+  script(type='module', src='/js/pages/add-device.js').
+  script.
+    (function () {
+      try {
+        const profile = !{ profile };
+
+        if (profile) {
+          window.profile = profile;
+        }
+      } catch (err) {
+        console.error("Profile not found");
+      }
+    })();
