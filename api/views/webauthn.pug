@@ -1,13 +1,13 @@
 extends layout
 
 block content
-    h1 Setup WebAuthN Device
-    if error
-        p.
-            #{error}
-    form(action=action,method="POST")
-        input(type="hidden",name="_csrf",value=csrfToken)
-        input(type="hidden",name="challenge",value=challenge)
-        button(id="setup", type="submit") Setup
+  h1 Setup WebAuthN Device
+  if error
+    p.
+    #{ error }
+  form(action=action, method='POST')
+    input(type='hidden', name='_csrf', value=csrfToken)
+    input(type='hidden', name='challenge', value=challenge)
+    button#setup(type='submit') Setup
 
-    script(type="module" src="/js/pages/webauthn.js").
+  script(type='module', src='/js/pages/webauthn.js').

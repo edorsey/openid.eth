@@ -1,47 +1,43 @@
 extends layout
 
 block content
-  h1.has-text-weight-semibold.is-size-2.has-text-centered(id="signup-title") Sign up with web3
+  h1#signup-title.has-text-weight-semibold.is-size-2.has-text-centered Sign up with web3
 
   ul#selectChain.has-text-centered.mt-5
     li.mb-4
-      button.button.is-large(id="enableEthereum", type="button") Sign up with Ethereum
+      button#enableEthereum.button.is-large(type='button') Sign up with Ethereum
     li.mb-4
-      button.button.is-large(id="enableTezos", type="button") Sign up with Tezos
+      button#enableTezos.button.is-large(type='button') Sign up with Tezos
     li
-      button.button.is-large(id="enableSolana", type="button") Sign up with Solana
+      button#enableSolana.button.is-large(type='button') Sign up with Solana
 
-
-  div#connectChain
+  #connectChain.is-hidden
     if error
-        p.
-            #{error}
+      p.
+      #{ error }
 
+    form(action=action, method='POST', style='display: none')
+      input(type='hidden', name='_csrf', value=csrfToken)
+      input#challenge(type='hidden', name='challenge', value=challenge)
+      div
+        label(for='address') Address
+        input#address(name='address', type='text')
+      div
+        label(for='ens') ENS
+        input#ens(name='ens', type='text')
+      div
+        label(for='email') Email
+        input#email(name='email', type='email')
+      div
+        label(for='twitter') Twitter
+        input#twitter(name='twitter', type='text')
+      div
+        label(for='url') URL
+        input#url(name='url', type='text')
+      div 
+        label(for='signature') Signature
+        input#signature(name='signature', type='text')
 
-    form(action=action, method="POST", style="display: none;")
-        input(type="hidden", name="_csrf", value=csrfToken)
-        input(type="hidden", name="challenge", value=challenge, id="challenge")
-        div
-            label(for="address") Address
-            input(id="address", name="address", type="text")
-        div
-            label(for="ens") ENS
-            input(id="ens", name="ens", type="text")
-        div
-            label(for="email") Email
-            input(id="email", name="email", type="email")
-        div
-            label(for="twitter") Twitter
-            input(id="twitter", name="twitter", type="text")
-        div
-            label(for="url") URL
-            input(id="url", name="url", type="text")
-        div 
-            label(for="signature") Signature
-            input(id="signature", name="signature", type="text")
+      input#accept(type='submit', name='submit', value='Sign up')
 
-        input(type="submit", id="accept", name="submit", value="Sign up")
-
-  script(src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js", type="application/javascript").
-  script(type="module" src="/js/pages/signup.js").
-      
+  script(type='module', src='/js/pages/signup.js').

@@ -1,82 +1,64 @@
 extends layout
 
 block content
-    h1(id="login-title") Please log in
-    if error
-        p.
-            #{error}
-    form(action=action, method="POST")
-        input(type="hidden", name="_csrf", value=csrfToken)
-        input(type="hidden", name="challenge", value=challenge, id="challenge")
-        div
-            label(for="address") Address
-            input(id="address", name="address", type="text")
-        div
-            label(for="ens") ENS
-            input(id="ens", name="ens", type="text")
-        div
-            label(for="email") Email
-            input(id="email", name="email", type="email")
-        div
-            label(for="twitter") Twitter
-            input(id="twitter", name="twitter", type="text")
-        div
-            label(for="url") URL
-            input(id="url", name="url", type="text")
-        div 
-            label(for="signature") Signature
-            input(id="signature", name="signature", type="text")
+  h1#login-title.has-text-weight-semibold.is-size-2.has-text-centered.mb-4.mt-4 Log in
 
-        input(type="submit", id="accept", name="submit", value="Log in")
-        input(type="submit", id="reject", name="submit", value="Deny access")
-    
-    button(id="enable", type="button") Enable Ethereum
+  .columns
+    .column.is-two-thirds-mobile.is-offset-2-mobile.is-half-tablet.is-offset-one-quarter-tablet.is-one-third-desktop.is-offset-one-third-desktop
+      .box
+        #selectChain
+          .has-text-centered
+            button#enableEthereum.button.is-primary(type='button') Connect to Ethereum
 
-    script(src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js", type="application/javascript").
-    script(type="module").
-        let accounts
-        if (typeof window.ethereum !== 'undefined') {
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
+        #connectChain.is-hidden.mt-5
+          if error
+            p.
+            #{ error }
 
-            const ethereumButton = document.querySelector('#enable');
+          form(action=action, method='POST')
+            input(type='hidden', name='_csrf', value=csrfToken)
+            input#challenge(type='hidden', name='challenge', value=challenge)
 
-            const challengeInput = document.querySelector('#challenge')
-            const addressInput = document.querySelector('#address')
-            const ensInput = document.querySelector('#ens')
-            const emailInput = document.querySelector('#email')
-            const twitterInput = document.querySelector('#twitter')
-            const urlInput = document.querySelector('#url')
-            const signatureInput = document.querySelector('#signature')
+            .field
+              label.label(for='address') Address
+              .control
+                input#address.input(name='address', type='text')
 
-            ethereumButton.addEventListener('click', async (e) => {
-                e.preventDefault();
-                accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-                console.log({accounts})
-                const ens = await provider.lookupAddress(accounts[0]);
-                console.log({account: accounts[0], ens})
+            .field
+              label.label(for='ens') ENS
+              .control
+                input#ens.input(name='ens', type='text')
 
-                addressInput.value = accounts[0]
-                ensInput.value = ens
+            .field
+              label.label(for='email') Email
+              .control
+                input#email.input(name='email', type='email')
 
-                if (ens) {
-                    const resolver = await provider.getResolver(ens)
-                    const email = await resolver.getText("email");
-                    const url = await resolver.getText("url");
-                    const twitter = await resolver.getText("com.twitter");
-                    
-                    console.log({email, url, twitter})
+            .field
+              label.label(for='twitter') Twitter
+              .control
+                input#twitter.input(name='twitter', type='text')
 
-                    emailInput.value = email
-                    urlInput.value = url
-                    twitterInput.value = twitter
-                }
+            .field
+              label.label(for='url') URL
+              .control
+                input#url.input(name='url', type='text')
 
-                const signer = provider.getSigner();
-                const signature = await signer.signMessage(challengeInput.value);
+            .field 
+              label.label(for='signature') Signature
+              .control
+                input#signature.input(name='signature', type='text')
 
-                console.log("SIG?", {signature});
+            .has-text-centered.mt-4
+              input#accept.button.is-link.m-2(
+                type='submit',
+                name='submit',
+                value='Log in'
+              )
+              input#reject.button.is-danger.m-2(
+                type='submit',
+                name='submit',
+                value='Deny access'
+              )
 
-                signatureInput.value = signature;
-            });
-        }
-        
+  script(type='module', src='/js/pages/login.js').

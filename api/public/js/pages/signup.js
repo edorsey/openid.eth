@@ -1,3 +1,5 @@
+import * as ethers from '/js/modules/ethers/ethers.esm.min.js'
+
 if (typeof window.ethereum !== 'undefined') {
   const provider = new ethers.providers.Web3Provider(window.ethereum)
 
