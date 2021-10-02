@@ -6,4 +6,33 @@ html
     link(rel='stylesheet', href='/css/bulma.min.css')
 
   body
+    .container
+      nav.navbar(role='navigation', aria-label='main navigation')
+        .navbar-brand
+          a.navbar-item(href='/') Decacube
+          a.navbar-burger(
+            role='button',
+            aria-label='menu',
+            aria-expanded='false',
+            data-target='navbarBasicExample'
+          )
+            span(aria-hidden='true')
+            span(aria-hidden='true')
+            span(aria-hidden='true')
+
+        .navbar-end
+          .navbar-item.has-dropdown.is-hoverable
+            a.navbar-link More
+
+            .navbar-dropdown.is-right
+              a.navbar-item(href='/signup') Sign up
+              a.navbar-item(href='/login') Login
+              .navbar-divider
+              a.navbar-item(href='/profile') Profile
+              a.navbar-item(href='/add-device') Add device
+              a.navbar-item(href='/login-device') Login device
+              .navbar-divider
+              a.navbar-item(href='/logout') Logout
+
+  .container
     block content
