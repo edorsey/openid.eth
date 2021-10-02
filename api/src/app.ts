@@ -14,6 +14,7 @@ import consent from './routes/consent'
 import webauthn from './routes/webauthn'
 import profile from './routes/profile'
 import addDevice from './routes/add-device'
+import loginDevice from './routes/login-device'
 
 const RedisStore = require('connect-redis')(session)
 const redisClient = redis.createClient({
@@ -73,6 +74,7 @@ app.use('/consent', consent)
 app.use('/webauthn', webauthn)
 app.use('/profile', profile)
 app.use('/add-device', addDevice)
+app.use('/login-device', loginDevice)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
