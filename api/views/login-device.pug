@@ -24,15 +24,3 @@ block content
         )
 
   script(type='module', src='/js/pages/login-device.js').
-  script.
-    (function () {
-      try {
-        const profile = !{ profile };
-
-        if (profile) {
-          window.profile = profile;
-        }
-      } catch (err) {
-        console.error("Profile not found");
-      }
-    })();

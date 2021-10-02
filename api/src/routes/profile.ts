@@ -13,7 +13,8 @@ router.get('/', csrfProtection, (req: any, res: any) => {
     csrfToken: req.csrfToken(),
     cookies: JSON.stringify(req.cookies, null, 2),
     session: JSON.stringify(req.session, null, 2),
-    headers: JSON.stringify(req.headers, null, 2)
+    headers: JSON.stringify(req.headers, null, 2),
+    profile: JSON.stringify(req.session.profile, null, 2)
   })
 })
 

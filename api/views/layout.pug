@@ -36,3 +36,17 @@ html
 
   .container
     block content
+
+  if profile
+    script.
+      (function () {
+        try {
+          const profile = !{ profile };
+
+          if (profile) {
+            window.profile = profile;
+          }
+        } catch (err) {
+          console.error("Profile not found");
+        }
+      })();
