@@ -1,0 +1,24 @@
+extends layout
+
+block content
+  h1.has-text-weight-semibold.is-size-2.has-text-centered.mb-4.mt-4 Devices
+
+  div
+    each device, index in devices
+      .is-flex.is-align-items-center
+        h2.p-6.is-size-1 #{ index + 1 }
+        div(style='position: relative; width: 100%; overflow: hidden')
+          div
+            h3.is-size-4 Credential ID
+            div(style='overflow: scroll')
+              pre #{ device.deviceCredentialID }
+          .mt-2
+            h3.is-size-4 Credential
+            div(style='overflow: scroll')
+              pre #{ device.deviceCredential }
+          .mt-2
+            h3.is-size-4 Client Data
+            .is-flex(style='overflow: scroll')
+              pre !{ JSON.stringify(device.deviceCredentialClientData, null, 2) }
+
+  script(type='module', src='/js/pages/list-devices.js').

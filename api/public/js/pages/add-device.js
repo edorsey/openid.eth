@@ -1,8 +1,5 @@
 import * as ethers from '/js/modules/ethers/ethers.esm.min.js'
 import { create } from '/js/modules/@github/webauthn-json/dist/main/webauthn-json.js'
-import { default as base64urlEncode } from '/js/modules/base64url/dist/base64url.js'
-
-console.log(base64urlEncode)
 
 /**
  * Convert a hex string to an ArrayBuffer.
@@ -36,15 +33,11 @@ function hexStringToArrayBuffer(hexString) {
   })
 
   var array = new Uint8Array(integers)
-  console.log(array)
 
   return array.buffer
 }
 
 async function addDevice(profile, challenge) {
-  const encoder = new TextEncoder()
-
-  console.log(base64urlEncode)
   const opts = {
     publicKey: {
       challenge: btoa(challenge),
@@ -66,10 +59,8 @@ async function addDevice(profile, challenge) {
       ]
     }
   }
-  console.log(opts)
-  const credential = await create(opts)
 
-  console.log('CRED', credential)
+  const credential = await create(opts)
 
   return credential
 }
@@ -86,33 +77,14 @@ const deviceCredentialClientDataJSONInput = document.querySelector(
 )
 const deviceCredentialInput = document.querySelector('#deviceCredential')
 
-console.log(addDeviceButton, deviceChallengeInput)
-
 addDeviceButton.addEventListener('click', async (e) => {
   const deviceIdentityChallenge = `${deviceChallengeInput.value}.${deviceChallengeSignatureInput.value}`
-  console.log({ deviceIdentityChallenge })
   const credential = await addDevice(window.profile, deviceIdentityChallenge)
   deviceCredentialIDInput.value = credential.id
 
   deviceCredentialClientDataJSONInput.value = credential.response.clientDataJSON
 
-  console.log(
-    'CRED',
-    credential,
-    credential.response,
-    JSON.stringify(credential.response)
-  )
-
-  const encoder = new TextEncoder()
-  const attestationObject = encoder.encode(
-    credential.response.attestationObject
-  )
-  const clientDataJSON = encoder.encode(credential.response.clientDataJSON)
-
-  deviceCredentialInput.value = JSON.stringify({
-    attestationObject,
-    clientDataJSON
-  })
+  deviceCredentialInput.value = credential.response.attestationObject
 })
 
 assertDeviceButton.addEventListener('click', async (e) => {

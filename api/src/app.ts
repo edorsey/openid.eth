@@ -1,4 +1,5 @@
 import express, { NextFunction, Response, Request } from 'express'
+import { promisify } from 'util'
 import path from 'path'
 import logger from 'morgan'
 import cookieParser from 'cookie-parser'
@@ -15,6 +16,7 @@ import webauthn from './routes/webauthn'
 import profile from './routes/profile'
 import addDevice from './routes/add-device'
 import loginDevice from './routes/login-device'
+import listDevices from './routes/list-devices'
 
 const RedisStore = require('connect-redis')(session)
 const redisClient = redis.createClient({
@@ -24,6 +26,10 @@ redisClient.on('error', (err) => console.log('REDIS ERROR', err))
 redisClient.on('connect', (e) => console.log('REDIS CONNECTED', e))
 
 const app = express()
+app.set('redis', {
+  get: promisify(redisClient.get).bind(redisClient),
+  set: promisify(redisClient.set).bind(redisClient)
+})
 
 // view engine setup
 app.set('views', path.join(__dirname, '..', 'views'))
@@ -66,6 +72,15 @@ webauthnRouter.get('/', (req, res) => {
 })
 app.use('/webauthn', webauthn.initialize())
 
+app.use((req: any, res, next) => {
+  if (req.session.profile) {
+    res.locals.profileJSON = JSON.stringify(req.session.profile, null, 2)
+    res.locals.profile = req.session.profile
+  }
+
+  next()
+})
+
 app.use('/', routes)
 app.use('/signup', signup)
 app.use('/login', login)
@@ -73,6 +88,7 @@ app.use('/logout', logout)
 app.use('/consent', consent)
 app.use('/webauthn', webauthn)
 app.use('/profile', profile)
+app.use('/list-devices', listDevices)
 app.use('/add-device', addDevice)
 app.use('/login-device', loginDevice)
 

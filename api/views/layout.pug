@@ -27,21 +27,26 @@ html
             .navbar-dropdown.is-right
               a.navbar-item(href='/signup') Sign up
               a.navbar-item(href='/login') Login
+              a.navbar-item(href='/login-device') Login device
+
               .navbar-divider
+
               a.navbar-item(href='/profile') Profile
               a.navbar-item(href='/add-device') Add device
-              a.navbar-item(href='/login-device') Login device
+              a.navbar-item(href='/list-devices') List devices
+
               .navbar-divider
+
               a.navbar-item(href='/logout') Logout
 
   .container
     block content
 
-  if profile
+  if profileJSON
     script.
       (function () {
         try {
-          const profile = !{ profile };
+          const profile = !{ profileJSON };
 
           if (profile) {
             window.profile = profile;

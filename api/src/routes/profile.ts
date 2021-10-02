@@ -11,10 +11,9 @@ const router = express.Router()
 router.get('/', csrfProtection, (req: any, res: any) => {
   res.render('profile', {
     csrfToken: req.csrfToken(),
-    cookies: JSON.stringify(req.cookies, null, 2),
-    session: JSON.stringify(req.session, null, 2),
-    headers: JSON.stringify(req.headers, null, 2),
-    profile: JSON.stringify(req.session.profile, null, 2)
+    cookiesJSON: JSON.stringify(req.cookies, null, 2),
+    sessionJSON: JSON.stringify(req.session, null, 2),
+    headersJSON: JSON.stringify(req.headers, null, 2)
   })
 })
 

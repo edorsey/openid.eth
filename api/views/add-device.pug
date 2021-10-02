@@ -22,20 +22,26 @@ block content
           input#idChallenge.input(
             name='idChallenge',
             type='text',
-            value=idChallenge
+            value=profile.idChallenge
           )
-
-      input#idChallenge(type='hidden', name='idChallenge', value=idChallenge)
 
       .field
         label.label(for='address') Address
         .control
-          input#address.input(name='address', type='text', value=address)
+          input#address.input(
+            name='address',
+            type='text',
+            value=profile.address
+          )
 
       .field
         label.label(for='ensName') ENS
         .control
-          input#ensName.input(name='ensName', type='text', value=ensName)
+          input#ensName.input(
+            name='ensName',
+            type='text',
+            value=profile.ensName
+          )
 
       .has-text-centered
         button#assertDevice.button.is-primary(type='button') Assert new device
