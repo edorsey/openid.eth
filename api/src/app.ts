@@ -4,6 +4,7 @@ import logger from 'morgan'
 import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
 import session from 'express-session'
+import redis from 'redis'
 
 import routes from './routes'
 import signup from './routes/signup'
@@ -13,6 +14,13 @@ import consent from './routes/consent'
 import webauthn from './routes/webauthn'
 import profile from './routes/profile'
 import addDevice from './routes/add-device'
+
+const RedisStore = require('connect-redis')(session)
+const redisClient = redis.createClient({
+  host: 'redis'
+})
+redisClient.on('error', (err) => console.log('REDIS ERROR', err))
+redisClient.on('connect', (e) => console.log('REDIS CONNECTED', e))
 
 const app = express()
 

@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  api:
+    build: .
+    ports:
+      - '4999:3000'
+    restart: unless-stopped
+    environment:
+      - HYDRA_ADMIN_URL=http://hydra:4445
+    command: npm start
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./public:/usr/src/app/public
+      - ./views:/usr/src/app/views
+      - ./typings:/usr/src/app/typings
+
+  redis:
+    image: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data

@@ -91,7 +91,6 @@ router.post(
         error: 'access_denied',
         error_description: 'The resource owner denied the request'
       })
-
       res.redirect(redirectTo)
     }
 

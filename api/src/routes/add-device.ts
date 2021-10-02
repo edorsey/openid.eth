@@ -29,6 +29,11 @@ router.get(
 
 router.post('/', csrfProtection, (req: any, res: any) => {
   // The challenge is now a hidden input field, so let's take it from the request body instead
+  console.log('ADDING DEVICE', req.body)
+
+  res.json({
+    ...req.body
+  })
 })
 
 export default router

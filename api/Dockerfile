@@ -15,6 +15,6 @@ RUN npm run build
 
 USER 10000
 
-ENTRYPOINT npm run serve
+ENTRYPOINT npm start
 
 EXPOSE 3000

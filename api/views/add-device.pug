@@ -6,11 +6,25 @@ block content
   div
     form(action=action, method='POST')
       input(type='hidden', name='_csrf', value=csrfToken)
-      input#deviceChallenge(
-        type='hidden',
-        name='deviceChallenge',
-        value=deviceChallenge
-      )
+
+      .field
+        label.label(for='address') Device Challenge
+        .control
+          input#deviceChallenge.input(
+            name='deviceChallenge',
+            type='text',
+            value=deviceChallenge
+          )
+
+      .field
+        label.label(for='address') ID Challenge
+        .control
+          input#idChallenge.input(
+            name='idChallenge',
+            type='text',
+            value=idChallenge
+          )
+
       input#idChallenge(type='hidden', name='idChallenge', value=idChallenge)
 
       .field
@@ -19,11 +33,53 @@ block content
           input#address.input(name='address', type='text', value=address)
 
       .field
-        label.label(for='address') ENS
+        label.label(for='ensName') ENS
         .control
-          input#address.input(name='ensName', type='text', value=ensName)
+          input#ensName.input(name='ensName', type='text', value=ensName)
 
-    button#addDevice.button Add device
+      .has-text-centered
+        button#assertDevice.button.is-primary(type='button') Assert new device
+
+      .field
+        label.label(for='deviceChallengeSignature') ID Signature of Device Challenge
+        .control
+          input#deviceChallengeSignature.input(
+            name='deviceChallengeSignature',
+            type='text',
+            value=deviceChallengeSignature
+          )
+
+      .has-text-centered
+        button#addDevice.button(type='button') Add device
+
+      .field
+        label.label(for='deviceCredentialID') Device Credential ID
+        .control
+          input#deviceCredentialID.input(
+            name='deviceCredentialID',
+            type='text',
+            value=deviceCredentialID
+          )
+
+      .field
+        label.label(for='deviceCredential') Credential
+        .control
+          input#deviceCredential.input(name='deviceCredential', type='text')
+
+      .field
+        label.label(for='deviceCredentialClientDataJSON') Device Credential ID
+        .control
+          input#deviceCredentialClientDataJSON.input(
+            name='deviceCredentialClientDataJSON',
+            type='text'
+          )
+
+      .has-text-centered.mt-4
+        input#submitDevice.button.is-link.m-2(
+          type='submit',
+          name='submit',
+          value='Submit device'
+        )
 
   script(type='module', src='/js/pages/add-device.js').
   script.
