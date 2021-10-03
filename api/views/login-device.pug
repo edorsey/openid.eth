@@ -10,11 +10,7 @@ block content
       .field
         label.label(for='address') Username
         .control
-          input#username.input(
-            name='username',
-            type='text',
-            value=profile.ensName || profile.name
-          )
+          input#username.input(name='username', type='text', value=username)
 
       .field
         label.label(for='deviceChallenge') Device Challenge

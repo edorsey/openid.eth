@@ -26,6 +26,7 @@ router.get(
     res.render('list-devices', {
       csrfToken: req.csrfToken(),
       action: urljoin(process.env.BASE_URL || '', '/list-devices'),
+      username: req.session.profile.name || req.session.profile.ensName,
       devices: identity.devices
     })
   })
