@@ -8,13 +8,59 @@ block content
       input(type='hidden', name='_csrf', value=csrfToken)
 
       .field
-        label.label(for='address') Device Challenge
+        label.label(for='address') Username
+        .control
+          input#username.input(
+            name='username',
+            type='text',
+            value=profile.ensName || profile.name
+          )
+
+      .field
+        label.label(for='deviceChallenge') Device Challenge
         .control
           input#deviceChallenge.input(
             name='deviceChallenge',
             type='text',
             value=deviceChallenge
           )
+
+      .field
+        label.label(for='deviceCredentialID') Device Credential ID
+        .control
+          input#deviceCredentialID.input(
+            name='deviceCredentialID',
+            type='text'
+          )
+
+      .field
+        label.label(for='deviceAuthenticatorData') Device Authenticator Data
+        .control
+          input#deviceAuthenticatorData.input(
+            name='deviceAuthenticatorData',
+            type='text'
+          )
+
+      .field
+        label.label(for='deviceClientDataJSON') Device Client JSON Data
+        .control
+          input#deviceClientDataJSON.input(
+            name='deviceClientDataJSON',
+            type='text'
+          )
+
+      .field
+        label.label(for='deviceSignature') Device Signature
+        .control
+          input#deviceSignature.input(name='deviceSignature', type='text')
+
+      .field
+        label.label(for='deviceUserHandle') Device User Handle
+        .control
+          input#deviceUserHandle.input(name='deviceUserHandle', type='text')
+
+      .has-text-centered 
+        button#auth.button(type='button') Auth
 
       .has-text-centered.mt-4
         input#submitDevice.button.is-link.m-2(

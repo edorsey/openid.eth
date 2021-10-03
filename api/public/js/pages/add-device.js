@@ -1,5 +1,5 @@
 import * as ethers from '/js/modules/ethers/ethers.esm.min.js'
-import { create } from '/js/modules/@github/webauthn-json/dist/main/webauthn-json.js'
+import * as webauthn from '/js/modules/@github/webauthn-json/dist/main/webauthn-json.js'
 
 /**
  * Convert a hex string to an ArrayBuffer.
@@ -60,7 +60,7 @@ async function addDevice(profile, challenge) {
     }
   }
 
-  const credential = await create(opts)
+  const credential = await webauthn.create(opts)
 
   return credential
 }

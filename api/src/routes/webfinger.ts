@@ -1,0 +1,76 @@
+import express from 'express'
+import csrf from 'csurf'
+import generateChallenge from '../helpers/generate-challenge'
+import asyncRoute from '../helpers/async-route'
+import urljoin from 'url-join'
+import { ethers } from 'ethers'
+
+const provider = new ethers.providers.InfuraProvider('homestead', {
+  projectId: process.env.INFURA_PROJECT_ID
+})
+
+// Sets up csrf protection
+const csrfProtection = csrf({
+  cookie: true
+})
+
+const router = express.Router()
+
+router.get(
+  '/',
+  csrfProtection,
+  asyncRoute(async (req: any, res: any) => {
+    const resource = req.query.resource
+    console.log({ resource })
+
+    const username = resource.replace('acct:', '')
+    if (!username) {
+      return res.json({})
+    }
+
+    const address = await provider.resolveName(username)
+    if (!address) {
+      return res.json({})
+    }
+    console.log('ADDRESS', address)
+
+    const redisClient = req.app.get('redis')
+
+    let identity
+    const identityJSON = await redisClient.get(address)
+    if (identityJSON) {
+      identity = JSON.parse(identityJSON)
+    } else {
+      return res.json({
+        subject: resource,
+        properties: {
+          username,
+          address,
+          devices: []
+        }
+      })
+    }
+
+    res.json({
+      subject: resource,
+      properties: {
+        username,
+        address,
+        devices: identity.devices.map(({ deviceCredentialID }) => {
+          return deviceCredentialID
+        })
+      }
+    })
+  })
+)
+
+router.post('/', csrfProtection, (req: any, res: any) => {
+  // The challenge is now a hidden input field, so let's take it from the request body instead
+  console.log('LOGGING IN DEVICE', req.body)
+
+  res.json({
+    ...req.body
+  })
+})
+
+export default router

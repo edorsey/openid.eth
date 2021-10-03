@@ -1,0 +1,57 @@
+import * as webauthn from '/js/modules/@github/webauthn-json/dist/main/webauthn-json.js'
+
+const usernameInput = document.querySelector('#username')
+const authButton = document.querySelector('#auth')
+const deviceChallengeInput = document.querySelector('#deviceChallenge')
+const deviceCredentialIDInput = document.querySelector('#deviceCredentialID')
+const deviceAuthenticatorDataInput = document.querySelector(
+  '#deviceAuthenticatorData'
+)
+const deviceClientDataJSONInput = document.querySelector(
+  '#deviceClientDataJSON'
+)
+const deviceSignatureInput = document.querySelector('#deviceSignature')
+const deviceUserHandleInput = document.querySelector('#deviceUserHandle')
+
+authButton.addEventListener('click', async (e) => {
+  console.log(usernameInput.value)
+
+  let allowCredentials
+  if (usernameInput.value) {
+    const result = await fetch(
+      `/.well-known/webfinger?resource=acct:${usernameInput.value}`
+    )
+
+    const account = await result.json()
+
+    console.log('RESULT', account)
+
+    allowCredentials = account.properties.devices.map((deviceCredentialID) => {
+      return {
+        type: 'public-key',
+        id: deviceCredentialID
+      }
+    })
+  }
+
+  const opts = {
+    publicKey: {
+      userVerification: 'required',
+      rpId: 'localhost',
+      challenge: deviceChallengeInput.value,
+      allowCredentials
+    }
+  }
+
+  const credential = await webauthn.get(opts)
+
+  deviceCredentialIDInput.value = credential.id
+  deviceAuthenticatorDataInput.value = credential.response.authenticatorData
+  deviceClientDataJSONInput.value = credential.response.clientDataJSON
+  deviceSignatureInput.value = credential.response.signature
+  deviceUserHandleInput.value = credential.response.userHandle
+
+  console.log({ credential })
+
+  return credential
+})
