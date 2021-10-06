@@ -78,9 +78,12 @@ const deviceCredentialClientDataJSONInput = document.querySelector(
 )
 const deviceCredentialInput = document.querySelector('#deviceCredential')
 const waitingForSignatureDiv = document.querySelector('#waitingForSignature')
+const metaMaskErrorDiv = document.querySelector('#metaMaskError')
 
 assertDeviceButton.addEventListener('click', async (e) => {
   if (typeof window.ethereum !== 'undefined') {
+    metaMaskErrorDiv.classList.add('is-hidden')
+
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = provider.getSigner()
 
@@ -95,6 +98,8 @@ assertDeviceButton.addEventListener('click', async (e) => {
     moveToStep(2)
 
     assertDeviceButton.disabled = false
+  } else {
+    metaMaskErrorDiv.classList.remove('is-hidden')
   }
 })
 

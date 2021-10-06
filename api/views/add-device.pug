@@ -23,6 +23,7 @@ block content
             p.mb-5 First, assert that you want to delegate your identity to a new device.
             button#assertDevice.button.is-primary(type='button') New device
             #waitingForSignature.is-hidden.mt-4 Waiting for signature from MetaMask
+            #metaMaskError.is-hidden.mt-4 No MetaMask detected
 
           #step-2.is-hidden
             input#deviceChallengeSignature.input(
