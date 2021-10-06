@@ -111,11 +111,10 @@ router.post(
       return
     }
 
-    const address = ethers.utils.verifyMessage(idChallenge, req.body.signature)
-
-    if (idChallenge !== req.session.idChallenge) {
-      throw new Error('idChallenge did not match')
-    }
+    const address = ethers.utils.verifyMessage(
+      req.session.idChallenge,
+      req.body.signature
+    )
 
     const ensName = await provider.lookupAddress(address)
 

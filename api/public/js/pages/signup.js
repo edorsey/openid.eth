@@ -6,7 +6,7 @@ const solanaButton = document.querySelector('#enableSolana')
 
 const ethereumErrorDiv = document.querySelector('#ethereumError')
 
-const challengeInput = document.querySelector('#challenge')
+const challengeInput = document.querySelector('#idChallenge')
 const addressInput = document.querySelector('#address')
 const ensInput = document.querySelector('#ens')
 const emailInput = document.querySelector('#email')
@@ -116,6 +116,7 @@ enableEthereumButton.addEventListener('click', async (e) => {
 
       signatureInput.value = signature
     } catch (err) {
+      console.log({ err })
       selectChain()
       return
     }

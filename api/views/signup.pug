@@ -30,7 +30,11 @@ block content
 
           form#signupForm(action=action, method='POST')
             input(type='hidden', name='_csrf', value=csrfToken)
-            input#challenge(type='hidden', name='challenge', value=challenge)
+            input#idChallenge(
+              type='hidden',
+              name='idChallenge',
+              value=idChallenge
+            )
             input#address(name='address', type='hidden')
             input#signature(name='signature', type='hidden')
 
