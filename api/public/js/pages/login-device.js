@@ -1,5 +1,6 @@
 import * as webauthn from '/js/modules/@github/webauthn-json/dist/main/webauthn-json.js'
 
+const loginForm = document.querySelector('form')
 const usernameInput = document.querySelector('#username')
 const authButton = document.querySelector('#auth')
 const deviceChallengeInput = document.querySelector('#deviceChallenge')
@@ -12,10 +13,9 @@ const deviceClientDataJSONInput = document.querySelector(
 )
 const deviceSignatureInput = document.querySelector('#deviceSignature')
 const deviceUserHandleInput = document.querySelector('#deviceUserHandle')
+const loginErrorDiv = document.querySelector('#loginError')
 
 authButton.addEventListener('click', async (e) => {
-  console.log(usernameInput.value)
-
   let allowCredentials
   if (usernameInput.value) {
     const result = await fetch(
@@ -23,8 +23,6 @@ authButton.addEventListener('click', async (e) => {
     )
 
     const account = await result.json()
-
-    console.log('RESULT', account)
 
     allowCredentials = account.properties.devices.map((deviceCredentialID) => {
       return {
@@ -43,15 +41,18 @@ authButton.addEventListener('click', async (e) => {
     }
   }
 
-  const credential = await webauthn.get(opts)
+  try {
+    const credential = await webauthn.get(opts)
 
-  deviceCredentialIDInput.value = credential.id
-  deviceAuthenticatorDataInput.value = credential.response.authenticatorData
-  deviceClientDataJSONInput.value = credential.response.clientDataJSON
-  deviceSignatureInput.value = credential.response.signature
-  deviceUserHandleInput.value = credential.response.userHandle
+    deviceCredentialIDInput.value = credential.id
+    deviceAuthenticatorDataInput.value = credential.response.authenticatorData
+    deviceClientDataJSONInput.value = credential.response.clientDataJSON
+    deviceSignatureInput.value = credential.response.signature
+    deviceUserHandleInput.value = credential.response.userHandle
 
-  console.log({ credential })
-
-  return credential
+    loginForm.submit()
+  } catch (err) {
+    console.error(err)
+    loginErrorDiv.textContent = 'Error getting credential, try again.'
+  }
 })

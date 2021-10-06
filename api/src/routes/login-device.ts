@@ -98,9 +98,7 @@ router.post(
       authenticatedAt: new Date()
     }
 
-    res.json({
-      ...req.body
-    })
+    res.redirect('/profile')
   })
 )
 
