@@ -120,10 +120,7 @@ router.post(
 
     await redisClient.set(req.session.profile.address, JSON.stringify(identity))
 
-    res.json({
-      ...req.body,
-      identity
-    })
+    res.redirect('/list-devices')
   })
 )
 

@@ -65,7 +65,8 @@ async function addDevice(profile, challenge) {
   return credential
 }
 
-const addDeviceButton = document.querySelector('#addDevice')
+const addDeviceForm = document.querySelector('#addDeviceForm')
+const addLocalDeviceButton = document.querySelector('#addLocalDevice')
 const deviceChallengeInput = document.querySelector('#deviceChallenge')
 const assertDeviceButton = document.querySelector('#assertDevice')
 const deviceChallengeSignatureInput = document.querySelector(
@@ -76,8 +77,28 @@ const deviceCredentialClientDataJSONInput = document.querySelector(
   '#deviceCredentialClientDataJSON'
 )
 const deviceCredentialInput = document.querySelector('#deviceCredential')
+const waitingForSignatureDiv = document.querySelector('#waitingForSignature')
 
-addDeviceButton.addEventListener('click', async (e) => {
+assertDeviceButton.addEventListener('click', async (e) => {
+  if (typeof window.ethereum !== 'undefined') {
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const signer = provider.getSigner()
+
+    waitingForSignatureDiv.classList.remove('is-hidden')
+    assertDeviceButton.disabled = true
+    const signature = await signer.signMessage(deviceChallenge.value)
+
+    deviceChallengeSignatureInput.value = signature
+
+    waitingForSignatureDiv.classList.add('is-hidden')
+
+    moveToStep(2)
+
+    assertDeviceButton.disabled = false
+  }
+})
+
+addLocalDeviceButton.addEventListener('click', async (e) => {
   const deviceIdentityChallenge = `${deviceChallengeInput.value}.${deviceChallengeSignatureInput.value}`
   const credential = await addDevice(window.profile, deviceIdentityChallenge)
   deviceCredentialIDInput.value = credential.id
@@ -85,14 +106,32 @@ addDeviceButton.addEventListener('click', async (e) => {
   deviceCredentialClientDataJSONInput.value = credential.response.clientDataJSON
 
   deviceCredentialInput.value = credential.response.attestationObject
+
+  addDeviceForm.submit()
 })
 
-assertDeviceButton.addEventListener('click', async (e) => {
-  if (typeof window.ethereum !== 'undefined') {
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    const signer = provider.getSigner()
-    const signature = await signer.signMessage(deviceChallenge.value)
-
-    deviceChallengeSignatureInput.value = signature
-  }
+const addRemoteDeviceButton = document.querySelector('#addRemoteDevice')
+const remoteDeviceQRCodeDiv = document.querySelector('#remoteDeviceQRCode')
+addRemoteDeviceButton.addEventListener('click', async (e) => {
+  new QRCode(remoteDeviceQRCodeDiv, {
+    text: window.location.href
+  })
+  moveToStep(3)
 })
+
+const stepEls = [
+  document.querySelector('#step-1'),
+  document.querySelector('#step-2'),
+  document.querySelector('#step-3'),
+  document.querySelector('#step-4')
+]
+
+function moveToStep(n) {
+  stepEls.forEach((el, i) => {
+    if (i === n - 1) {
+      el.classList.remove('is-hidden')
+    } else {
+      el.classList.add('is-hidden')
+    }
+  })
+}

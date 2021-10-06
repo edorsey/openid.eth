@@ -1,90 +1,66 @@
 extends layout
 
 block content
-  h1.has-text-weight-semibold.is-size-2.has-text-centered.mb-4.mt-4 Add Device
+  .columns
+    .column.is-10-mobile.is-offset-1-mobile.is-8-tablet.is-offset-2-tablet.is-6-desktop.is-offset-3-desktop
+      .box
+        h1.has-text-weight-semibold.is-size-2.has-text-centered.mb-4.mt-4 Add Device
 
-  div
-    form(action=action, method='POST')
-      input(type='hidden', name='_csrf', value=csrfToken)
+        form#addDeviceForm(action=action, method='POST')
+          input(type='hidden', name='_csrf', value=csrfToken)
 
-      .field
-        label.label(for='address') Device Challenge
-        .control
-          input#deviceChallenge.input(
-            name='deviceChallenge',
-            type='text',
-            value=deviceChallenge
-          )
+          #step-1.has-text-centered.mb-5
+            input#deviceChallenge.input(
+              name='deviceChallenge',
+              type='hidden',
+              value=deviceChallenge
+            )
+            input#idChallenge.input(
+              name='idChallenge',
+              type='hidden',
+              value=profile.idChallenge
+            )
+            p.mb-5 First, assert that you want to delegate your identity to a new device.
+            button#assertDevice.button.is-primary(type='button') New device
+            #waitingForSignature.is-hidden.mt-4 Waiting for signature from MetaMask
 
-      .field
-        label.label(for='address') ID Challenge
-        .control
-          input#idChallenge.input(
-            name='idChallenge',
-            type='text',
-            value=profile.idChallenge
-          )
+          #step-2.is-hidden
+            input#deviceChallengeSignature.input(
+              name='deviceChallengeSignature',
+              type='hidden',
+              value=deviceChallengeSignature
+            )
+            input#deviceCredentialID.input(
+              name='deviceCredentialID',
+              type='hidden',
+              value=deviceCredentialID
+            )
+            input#deviceCredential.input(
+              name='deviceCredential',
+              type='hidden'
+            )
+            input#deviceCredentialClientDataJSON.input(
+              name='deviceCredentialClientDataJSON',
+              type='hidden'
+            )
 
-      .field
-        label.label(for='address') Address
-        .control
-          input#address.input(
-            name='address',
-            type='text',
-            value=profile.address
-          )
+            .has-text-centered.is-flex.is-align-items-center.is-justify-content-center
+              button#addLocalDevice.button.m-4(type='button') Add this device
+              span OR
+              button#addRemoteDevice.button.m-4(type='button') Add remote device
 
-      .field
-        label.label(for='ensName') ENS
-        .control
-          input#ensName.input(
-            name='ensName',
-            type='text',
-            value=profile.ensName
-          )
+          #step-3.is-hidden.has-text-centered
+            p.mt-5.mb-5 Scan this QR Code with the device you wish to delegate access to.
+            .is-flex.is-justify-content-center
+              #remoteDeviceQRCode
+            p.mt-5.mb-5 Expires in 5 minutes
 
-      .has-text-centered
-        button#assertDevice.button.is-primary(type='button') Assert new device
+          #step-4.is-hidden
+            .has-text-centered.mt-4
+              input#submitDevice.button.is-link.m-2(
+                type='submit',
+                value='Submit device'
+              )
 
-      .field
-        label.label(for='deviceChallengeSignature') ID Signature of Device Challenge
-        .control
-          input#deviceChallengeSignature.input(
-            name='deviceChallengeSignature',
-            type='text',
-            value=deviceChallengeSignature
-          )
-
-      .has-text-centered
-        button#addDevice.button(type='button') Add device
-
-      .field
-        label.label(for='deviceCredentialID') Device Credential ID
-        .control
-          input#deviceCredentialID.input(
-            name='deviceCredentialID',
-            type='text',
-            value=deviceCredentialID
-          )
-
-      .field
-        label.label(for='deviceCredential') Credential
-        .control
-          input#deviceCredential.input(name='deviceCredential', type='text')
-
-      .field
-        label.label(for='deviceCredentialClientDataJSON') Device Credential ID
-        .control
-          input#deviceCredentialClientDataJSON.input(
-            name='deviceCredentialClientDataJSON',
-            type='text'
-          )
-
-      .has-text-centered.mt-4
-        input#submitDevice.button.is-link.m-2(
-          type='submit',
-          name='submit',
-          value='Submit device'
-        )
-
+  script(src='/js/modules/qrcodejs/qrcode.js')
   script(type='module', src='/js/pages/add-device.js').
