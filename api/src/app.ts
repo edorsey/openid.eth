@@ -29,6 +29,7 @@ redisClient.on('connect', (e) => console.log('REDIS CONNECTED', e))
 const app = express()
 
 app.locals.domain = process.env.DOMAIN || 'auth-test.dorsey.io'
+app.locals.title = process.env.TITLE || 'Decacube'
 
 app.set('redis', {
   get: promisify(redisClient.get).bind(redisClient),
