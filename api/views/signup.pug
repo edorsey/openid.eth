@@ -1,43 +1,42 @@
 extends layout
 
 block content
-  h1#signup-title.has-text-weight-semibold.is-size-2.has-text-centered Sign up with web3
+  .columns
+    .column.is-10-mobile.is-offset-1-mobile.is-8-tablet.is-offset-2-tablet.is-6-desktop.is-offset-3-desktop
+      .box
+        h1#signup-title.has-text-weight-semibold.is-size-2.has-text-centered.mb-6 Sign up with web3
 
-  ul#selectChain.has-text-centered.mt-5
-    li.mb-4
-      button#enableEthereum.button.is-large(type='button') Sign up with Ethereum
-    li.mb-4
-      button#enableTezos.button.is-large(type='button') Sign up with Tezos
-    li
-      button#enableSolana.button.is-large(type='button') Sign up with Solana
+        ul#selectChain.has-text-centered.mt-5
+          li.mb-4
+            button#enableEthereum.button.is-large(type='button') Sign up with Ethereum
+            p#ethereumError.is-hidden No MetaMask detected
+          li.mb-4
+            button#enableTezos.button.is-large(type='button') Sign up with Tezos
+          li
+            button#enableSolana.button.is-large(type='button') Sign up with Solana
 
-  #connectChain.is-hidden
-    if error
-      p.
-      #{ error }
+        #connectChain.is-hidden.mt-5
+          #profile.has-text-centered
+            h2#profileTitle.is-size-3.mb-5(style='work-break: break-word')
+            h3#profileSubtitle.is-size-5.mb-5(style='work-break: break-word')
+            .is-flex.is-justify-content-space-between.px-4
+              #profileUrl.is-hidden.p-4
+              #profileTwitter.is-hidden.p-4
+              #profileEmail.is-hidden.p-4
 
-    form(action=action, method='POST', style='display: none')
-      input(type='hidden', name='_csrf', value=csrfToken)
-      input#challenge(type='hidden', name='challenge', value=challenge)
-      div
-        label(for='address') Address
-        input#address(name='address', type='text')
-      div
-        label(for='ens') ENS
-        input#ens(name='ens', type='text')
-      div
-        label(for='email') Email
-        input#email(name='email', type='email')
-      div
-        label(for='twitter') Twitter
-        input#twitter(name='twitter', type='text')
-      div
-        label(for='url') URL
-        input#url(name='url', type='text')
-      div 
-        label(for='signature') Signature
-        input#signature(name='signature', type='text')
+          if error
+            p.
+            #{ error }
 
-      input#accept(type='submit', name='submit', value='Sign up')
+          form#signupForm(action=action, method='POST')
+            input(type='hidden', name='_csrf', value=csrfToken)
+            input#challenge(type='hidden', name='challenge', value=challenge)
+            input#address(name='address', type='hidden')
+            input#signature(name='signature', type='hidden')
 
-  script(type='module', src='/js/pages/signup.js').
+            #waitingForSignature.is-hidden.mt-4.has-text-centered Waiting for signature from MetaMask
+
+            .has-text-centered.mt-4.is-hidden
+              button.button.m-4(type='submit') Sign up
+
+        script(type='module', src='/js/pages/signup.js').
