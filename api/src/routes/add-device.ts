@@ -17,11 +17,6 @@ router.get(
   '/',
   csrfProtection,
   asyncRoute(async (req: any, res: any) => {
-    const redisClient = req.app.get('redis')
-
-    const identity = await redisClient.get(req.session.profile.address)
-    console.log({ identity })
-
     const deviceChallenge = await generateChallenge()
 
     req.session.deviceChallenge = deviceChallenge

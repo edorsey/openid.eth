@@ -35,7 +35,7 @@ authButton.addEventListener('click', async (e) => {
   const opts = {
     publicKey: {
       userVerification: 'required',
-      rpId: 'localhost',
+      rpId: window.config.domain,
       challenge: deviceChallengeInput.value,
       allowCredentials
     }

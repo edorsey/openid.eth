@@ -42,6 +42,23 @@ html
   .container
     block content
 
+  if domain
+    script.
+      (function () {
+        try {
+          if (!window.config) {
+            window.config = {};
+          }
+
+          const domain = "!{ domain }";
+          if (domain) {
+            window.config.domain = domain;
+          }
+        } catch (err) {
+          console.error("domain not found");
+        }
+      })();
+
   if profileJSON
     script.
       (function () {

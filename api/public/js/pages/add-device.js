@@ -43,7 +43,7 @@ async function addDevice(profile, challenge) {
       challenge: btoa(challenge),
       rp: {
         name: 'Decacube',
-        id: 'localhost',
+        id: window?.config?.domain,
         icon: 'http://localhost:1999/login.ico'
       },
       user: {

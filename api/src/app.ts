@@ -27,6 +27,9 @@ redisClient.on('error', (err) => console.log('REDIS ERROR', err))
 redisClient.on('connect', (e) => console.log('REDIS CONNECTED', e))
 
 const app = express()
+
+app.locals.domain = process.env.DOMAIN || 'auth-test.dorsey.io'
+
 app.set('redis', {
   get: promisify(redisClient.get).bind(redisClient),
   set: promisify(redisClient.set).bind(redisClient)
