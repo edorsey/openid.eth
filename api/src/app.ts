@@ -154,7 +154,7 @@ const io = new Server(httpServer, {
 })
 
 io.on('connection', (socket) => {
-  console.log('CONNECTION', socket)
+  console.log('CONNECTION')
 })
 
 httpServer.listen(listenOn)
