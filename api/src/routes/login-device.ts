@@ -1,14 +1,9 @@
 import express from 'express'
 import csrf from 'csurf'
-import { ethers } from 'ethers'
 import generateChallenge from '../helpers/generate-challenge'
 import asyncRoute from '../helpers/async-route'
 import urljoin from 'url-join'
 import base64url from 'base64url'
-
-const provider = new ethers.providers.InfuraProvider('homestead', {
-  projectId: process.env.INFURA_PROJECT_ID
-})
 
 // Sets up csrf protection
 const csrfProtection = csrf({
@@ -69,7 +64,7 @@ router.post(
 
     let addressForProvidedUsername
     try {
-      addressForProvidedUsername = await provider.resolveName(username)
+      addressForProvidedUsername = await req.lookupAddressByName(username)
     } catch (err) {
       console.error(err)
       throw new Error('Failed to lookup username')
@@ -94,6 +89,10 @@ router.post(
     if (!deviceCredential) {
       throw new Error('Device credential not found')
     }
+
+    await req.updateIdentity(addressForProvidedUsername, {
+      authenticatedAt: new Date()
+    })
 
     req.session.address = addressForProvidedUsername
 

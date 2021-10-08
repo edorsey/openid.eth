@@ -2,14 +2,9 @@ import express from 'express'
 import url from 'url'
 import urljoin from 'url-join'
 import csrf from 'csurf'
-import { ethers } from 'ethers'
 import { hydraAdmin } from '../config'
 import generateChallenge from '../helpers/generate-challenge'
 import asyncRoute from '../helpers/async-route'
-
-const provider = new ethers.providers.InfuraProvider("homestead", {
-  projectId: process.env.INFURA_PROJECT_ID,
-});
 
 // Sets up csrf protection
 const csrfProtection = csrf({
@@ -111,33 +106,19 @@ router.post(
       return
     }
 
-    const address = ethers.utils.verifyMessage(
+    const address = req.ens.verifyMessageSignature(
       req.session.idChallenge,
       req.body.signature
     )
 
-    const ensName = await provider.lookupAddress(address)
-
-    const resolver = await provider.getResolver(ensName)
-
-    const email = await resolver.getText('email')
-    const url = await resolver.getText('url')
-    const twitter = await resolver.getText('com.twitter')
-
-    res.session.address = address
-    req.session.profile = {
-      idChallenge,
-      idSignature: req.body.signature,
-      ensName,
+    const {
       name: ensName,
-      chain: 'ETH',
-      nameService: 'ENS',
-      address,
       email,
       url,
-      twitter,
-      authenticatedAt: new Date()
-    }
+      twitter
+    } = await req.ens.lookupProfileByAddress(address)
+
+    res.session.address = address
 
     if (loginChallenge) {
       // Seems like the user authenticated! Let's tell hydra...

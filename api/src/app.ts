@@ -10,6 +10,7 @@ import bodyParser from 'body-parser'
 import session from 'express-session'
 import redis from 'redis'
 import connectRedis from 'connect-redis'
+import { ethers } from 'ethers'
 
 import routes from './routes'
 import signup from './routes/signup'
@@ -30,6 +31,10 @@ const redisClient = redis.createClient({
 })
 redisClient.on('error', (err) => console.log('REDIS ERROR', err))
 redisClient.on('connect', (e) => console.log('REDIS CONNECTED', e))
+
+const ethereumProvider = new ethers.providers.InfuraProvider('homestead', {
+  projectId: process.env.INFURA_PROJECT_ID
+})
 
 const app = express()
 
@@ -173,6 +178,65 @@ app.use((req: any, res: any, next: NextFunction) => {
   req.getProfile = getProfile
   req.saveIdentity = saveIdentity
   req.updateIdentity = updateIdentity
+
+  next()
+})
+
+app.use((req: any, res, next) => {
+  const redisClient = req.app.get('redis')
+
+  const verifyMessageSignature = (message, signature) => {
+    return ethers.utils.verifyMessage(message, signature)
+  }
+
+  const lookupAddressByName = async (name) => {
+    const cacheKey = `ETH::ENS::name:${name}`
+
+    const cachedAddress = await redisClient.get(cacheKey)
+    if (cachedAddress) return cachedAddress
+
+    const address = await ethereumProvider.resolveName(name)
+
+    await redisClient.set(cacheKey, address)
+    await redisClient.expire(cacheKey, 60 * 60)
+
+    return address
+  }
+
+  const lookupNameByAddress = async (addr) => {
+    const ensName = await ethereumProvider.lookupAddress(addr)
+
+    return ensName
+  }
+
+  const lookupProfileByAddress = async (addr) => {
+    const ensName = await lookupNameByAddress(addr)
+    const resolver = await ethereumProvider.getResolver(ensName)
+
+    const [email, url, twitter] = await Promise.all([
+      resolver.getText('email'),
+      resolver.getText('url'),
+      resolver.getText('com.twitter')
+    ])
+
+    return {
+      address: addr,
+      chain: 'ETH',
+      name: ensName,
+      nameService: 'ENS',
+      email,
+      url,
+      twitter
+    }
+  }
+
+  req.ens = {
+    verifyMessageSignature,
+    ethereumProvider,
+    lookupAddressByName,
+    lookupNameByAddress,
+    lookupProfileByAddress
+  }
 
   next()
 })

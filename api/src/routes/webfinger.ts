@@ -1,13 +1,6 @@
 import express from 'express'
 import csrf from 'csurf'
-import generateChallenge from '../helpers/generate-challenge'
 import asyncRoute from '../helpers/async-route'
-import urljoin from 'url-join'
-import { ethers } from 'ethers'
-
-const provider = new ethers.providers.InfuraProvider('homestead', {
-  projectId: process.env.INFURA_PROJECT_ID
-})
 
 // Sets up csrf protection
 const csrfProtection = csrf({
@@ -28,19 +21,15 @@ router.get(
       return res.json({})
     }
 
-    const address = await provider.resolveName(username)
+    const address = await req.ens.lookupAddressByName(username)
     if (!address) {
       return res.json({})
     }
     console.log('ADDRESS', address)
 
-    const redisClient = req.app.get('redis')
+    const identity = await req.getIdentity(address)
 
-    let identity
-    const identityJSON = await redisClient.get(address)
-    if (identityJSON) {
-      identity = JSON.parse(identityJSON)
-    } else {
+    if (!identity) {
       return res.json({
         subject: resource,
         properties: {
