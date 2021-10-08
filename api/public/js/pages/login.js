@@ -1,46 +1,67 @@
-import * as ethers from '/js/modules/ethers/ethers.esm.min.js'
+import * as webauthn from '/js/modules/@github/webauthn-json/dist/main/webauthn-json.js'
 
-if (typeof window.ethereum !== 'undefined') {
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
+const loginForm = document.querySelector('form')
+const usernameInput = document.querySelector('#username')
+const authButton = document.querySelector('#auth')
+const deviceChallengeInput = document.querySelector('#deviceChallenge')
+const deviceCredentialIDInput = document.querySelector('#deviceCredentialID')
+const deviceAuthenticatorDataInput = document.querySelector(
+  '#deviceAuthenticatorData'
+)
+const deviceClientDataJSONInput = document.querySelector(
+  '#deviceClientDataJSON'
+)
+const deviceSignatureInput = document.querySelector('#deviceSignature')
+const deviceUserHandleInput = document.querySelector('#deviceUserHandle')
+const loginErrorDiv = document.querySelector('#loginError')
 
-  const ethereumButton = document.querySelector('#enableEthereum')
+authButton.addEventListener('click', async (e) => {
+  let allowCredentials
+  if (usernameInput.value) {
+    const result = await fetch(
+      `/.well-known/webfinger?resource=acct:${usernameInput.value}`
+    )
 
-  const idChallengeInput = document.querySelector('#idChallenge')
-  const addressInput = document.querySelector('#address')
-  const ensInput = document.querySelector('#ens')
-  const emailInput = document.querySelector('#email')
-  const twitterInput = document.querySelector('#twitter')
-  const urlInput = document.querySelector('#url')
-  const signatureInput = document.querySelector('#signature')
+    const account = await result.json()
 
-  ethereumButton.addEventListener('click', async (e) => {
-    e.preventDefault()
+    allowCredentials = account.properties.devices
+      .filter((deviceCredentialID) => {
+        return (
+          deviceCredentialID !==
+          '***REMOVED***'
+        )
+      })
+      .map((deviceCredentialID) => {
+        return {
+          type: 'public-key',
+          id: deviceCredentialID
+        }
+      })
+  }
 
-    // document.querySelector('#selectChain').classList.add('is-hidden')
-    document.querySelector('#connectChain').classList.remove('is-hidden')
-
-    const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
-    const ens = await provider.lookupAddress(accounts[0])
-
-    addressInput.value = accounts[0]
-    ensInput.value = ens
-
-    if (ens) {
-      const resolver = await provider.getResolver(ens)
-      const email = await resolver.getText('email')
-      const url = await resolver.getText('url')
-      const twitter = await resolver.getText('com.twitter')
-
-      emailInput.value = email
-      urlInput.value = url
-      twitterInput.value = twitter
+  const opts = {
+    publicKey: {
+      userVerification: 'preferred',
+      rpId: window.config.domain,
+      challenge: deviceChallengeInput.value,
+      allowCredentials
     }
+  }
 
-    console.log('WTF', idChallengeInput, idChallengeInput.value)
+  try {
+    const credential = await webauthn.get(opts)
 
-    const signer = provider.getSigner()
-    const signature = await signer.signMessage(idChallengeInput.value)
+    console.log('CRED', credential)
 
-    signatureInput.value = signature
-  })
-}
+    deviceCredentialIDInput.value = credential.id
+    deviceAuthenticatorDataInput.value = credential.response.authenticatorData
+    deviceClientDataJSONInput.value = credential.response.clientDataJSON
+    deviceSignatureInput.value = credential.response.signature
+    deviceUserHandleInput.value = credential.response.userHandle
+
+    loginForm.submit()
+  } catch (err) {
+    console.error(err)
+    loginErrorDiv.textContent = 'Error getting credential, try again.'
+  }
+})

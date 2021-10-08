@@ -1,0 +1,73 @@
+extends layout
+
+block content
+  h1#login-title.has-text-weight-semibold.is-size-2.has-text-centered.mb-4.mt-4 Log in
+
+  .columns
+    .column.is-two-thirds-mobile.is-offset-2-mobile.is-half-tablet.is-offset-one-quarter-tablet.is-one-third-desktop.is-offset-one-third-desktop
+      .box
+        #selectChain
+          .has-text-centered
+            button#enableEthereum.button.is-primary(type='button') Connect to Ethereum
+
+        #connectChain.is-hidden.mt-5
+          if error
+            p.
+            #{ error }
+
+          form(action=action, method='POST')
+            input(type='hidden', name='_csrf', value=csrfToken)
+            input#loginChallenge(
+              type='hidden',
+              name='loginChallenge',
+              value=loginChallenge
+            )
+            input#idChallenge(
+              type='hidden',
+              name='idChallenge',
+              value=idChallenge
+            )
+
+            .field
+              label.label(for='address') Address
+              .control
+                input#address.input(name='address', type='text')
+
+            .field
+              label.label(for='ens') ENS
+              .control
+                input#ens.input(name='ens', type='text')
+
+            .field
+              label.label(for='email') Email
+              .control
+                input#email.input(name='email', type='email')
+
+            .field
+              label.label(for='twitter') Twitter
+              .control
+                input#twitter.input(name='twitter', type='text')
+
+            .field
+              label.label(for='url') URL
+              .control
+                input#url.input(name='url', type='text')
+
+            .field 
+              label.label(for='signature') Signature
+              .control
+                input#signature.input(name='signature', type='text')
+
+            .has-text-centered.mt-4
+              input#accept.button.is-link.m-2(
+                type='submit',
+                name='submit',
+                value='Log in'
+              )
+              input#reject.button.is-danger.m-2(
+                type='submit',
+                name='submit',
+                value='Deny access'
+              )
+
+  script(type='module', src='/js/pages/old-login.js').

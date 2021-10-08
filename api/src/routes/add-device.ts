@@ -110,7 +110,7 @@ router.post(
       )
     }
 
-    const identity = req.getIdentity(challengeAddress)
+    const identity = await req.getIdentity(challengeAddress)
 
     if (!identity) {
       throw new Error('Identity not found')

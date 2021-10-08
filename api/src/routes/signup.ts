@@ -32,7 +32,7 @@ router.post('/', csrfProtection, async (req: any, res: any) => {
   const { signature } = req.body
   const { idChallenge } = req.session
 
-  const address = req.ens.verifyMessage(idChallenge, signature)
+  const address = req.ens.verifyMessageSignature(idChallenge, signature)
 
   const ensProfile = await req.ens.lookupProfileByAddress(address)
 

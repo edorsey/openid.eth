@@ -20,7 +20,6 @@ import consent from './routes/consent'
 import webauthn from './routes/webauthn'
 import profile from './routes/profile'
 import addDevice from './routes/add-device'
-import loginDevice from './routes/login-device'
 import listDevices from './routes/list-devices'
 import webfinger from './routes/webfinger'
 import asyncRoute from './helpers/async-route'
@@ -166,7 +165,7 @@ app.use((req: any, res: any, next: NextFunction) => {
 
     const updatedIdentity = {
       ...existingIdentity,
-      update
+      ...update
     }
 
     const identity = await saveIdentity(address, updatedIdentity)
@@ -262,7 +261,6 @@ app.use('/webauthn', webauthn)
 app.use('/profile', profile)
 app.use('/list-devices', listDevices)
 app.use('/add-device', addDevice)
-app.use('/login-device', loginDevice)
 app.use('/.well-known/webfinger', webfinger)
 
 // catch 404 and forward to error handler

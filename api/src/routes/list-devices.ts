@@ -20,7 +20,7 @@ router.get(
       csrfToken: req.csrfToken(),
       action: urljoin(process.env.BASE_URL || '', '/list-devices'),
       username: identity?.name,
-      devices: identity?.devices
+      devices: identity?.devices || []
     })
   })
 )

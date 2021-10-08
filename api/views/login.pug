@@ -1,73 +1,52 @@
 extends layout
 
 block content
-  h1#login-title.has-text-weight-semibold.is-size-2.has-text-centered.mb-4.mt-4 Log in
-
   .columns
-    .column.is-two-thirds-mobile.is-offset-2-mobile.is-half-tablet.is-offset-one-quarter-tablet.is-one-third-desktop.is-offset-one-third-desktop
+    .column.is-10-mobile.is-offset-1-mobile.is-8-tablet.is-offset-2-tablet.is-6-desktop.is-offset-3-desktop
       .box
-        #selectChain
-          .has-text-centered
-            button#enableEthereum.button.is-primary(type='button') Connect to Ethereum
+        h1.has-text-weight-semibold.is-size-2.has-text-centered.mb-5.mt-2 Login Device
+        form#loginForm(action=action, method='POST')
+          input(type='hidden', name='_csrf', value=csrfToken)
+          input#deviceChallenge.input(
+            name='deviceChallenge',
+            type='hidden',
+            value=deviceChallenge
+          )
+          input#loginChallenge(
+            type='hidden',
+            name='loginChallenge',
+            value=loginChallenge
+          )
+          input#deviceCredentialID.input(
+            name='deviceCredentialID',
+            type='hidden'
+          )
+          input#deviceAuthenticatorData.input(
+            name='deviceAuthenticatorData',
+            type='hidden'
+          )
+          input#deviceClientDataJSON.input(
+            name='deviceClientDataJSON',
+            type='hidden'
+          )
+          input#deviceSignature.input(name='deviceSignature', type='hidden')
+          input#deviceUserHandle.input(name='deviceUserHandle', type='hidden')
 
-        #connectChain.is-hidden.mt-5
-          if error
-            p.
-            #{ error }
+          #loginError.has-text-centered.hidden
 
-          form(action=action, method='POST')
-            input(type='hidden', name='_csrf', value=csrfToken)
-            input#loginChallenge(
-              type='hidden',
-              name='loginChallenge',
-              value=loginChallenge
-            )
-            input#idChallenge(
-              type='hidden',
-              name='idChallenge',
-              value=idChallenge
-            )
-
-            .field
-              label.label(for='address') Address
-              .control
-                input#address.input(name='address', type='text')
-
-            .field
-              label.label(for='ens') ENS
-              .control
-                input#ens.input(name='ens', type='text')
-
-            .field
-              label.label(for='email') Email
-              .control
-                input#email.input(name='email', type='email')
-
-            .field
-              label.label(for='twitter') Twitter
-              .control
-                input#twitter.input(name='twitter', type='text')
-
-            .field
-              label.label(for='url') URL
-              .control
-                input#url.input(name='url', type='text')
-
-            .field 
-              label.label(for='signature') Signature
-              .control
-                input#signature.input(name='signature', type='text')
-
-            .has-text-centered.mt-4
-              input#accept.button.is-link.m-2(
-                type='submit',
-                name='submit',
-                value='Log in'
+          .field.mb-6.mt-5
+            label.label(for='address') Username
+            .control
+              input#username.input(
+                name='username',
+                type='text',
+                value=username
               )
-              input#reject.button.is-danger.m-2(
-                type='submit',
-                name='submit',
-                value='Deny access'
-              )
+
+          .has-text-centered.mt-6
+            button#auth.button.is-link(type='button') Login
+
+      .has-text-centered.mt-6
+        a.button(href='/signup') Sign up
 
   script(type='module', src='/js/pages/login.js').
