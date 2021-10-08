@@ -1,4 +1,7 @@
+import { createServer } from 'http'
+import { Server } from 'socket.io'
 import express, { NextFunction, Response, Request } from 'express'
+const { createAdapter } = require('@socket.io/redis-adapter')
 import { promisify } from 'util'
 import path from 'path'
 import logger from 'morgan'
@@ -6,6 +9,7 @@ import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
 import session from 'express-session'
 import redis from 'redis'
+import connectRedis from 'connect-redis'
 
 import routes from './routes'
 import signup from './routes/signup'
@@ -19,7 +23,7 @@ import loginDevice from './routes/login-device'
 import listDevices from './routes/list-devices'
 import webfinger from './routes/webfinger'
 
-const RedisStore = require('connect-redis')(session)
+const RedisStore = connectRedis(session)
 const redisClient = redis.createClient({
   host: 'redis'
 })
@@ -33,7 +37,8 @@ app.locals.title = process.env.TITLE || 'Decacube'
 
 app.set('redis', {
   get: promisify(redisClient.get).bind(redisClient),
-  set: promisify(redisClient.set).bind(redisClient)
+  set: promisify(redisClient.set).bind(redisClient),
+  expire: promisify(redisClient.expire).bind(redisClient)
 })
 
 // view engine setup
@@ -139,6 +144,17 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 })
 
 const listenOn = Number(process.env.PORT || 3000)
-app.listen(listenOn, () => {
-  console.log(`Listening on http://0.0.0.0:${listenOn}`)
+
+const httpServer = createServer(app)
+const pubClient = redisClient.duplicate()
+const subClient = redisClient.duplicate()
+const io = new Server(httpServer, {
+  serveClient: true,
+  adapter: createAdapter(pubClient, subClient)
 })
+
+io.on('connection', (socket) => {
+  console.log('CONNECTION', socket)
+})
+
+httpServer.listen(listenOn)

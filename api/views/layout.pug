@@ -72,3 +72,7 @@ html
           console.error("Profile not found");
         }
       })();
+
+  script(src='/socket.io/socket.io.js').
+  script.
+    window.socket = io(`https://${window.config.domain}`);
