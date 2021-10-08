@@ -26,6 +26,13 @@ services:
     restart: unless-stopped
     environment:
       - HYDRA_ADMIN_URL=http://hydra:4445
+      - DOMAIN=auth.decacube.com
+
+  redis:
+    image: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data
 
   hydra:
     image: oryd/hydra:latest

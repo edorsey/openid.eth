@@ -14,20 +14,13 @@ router.get(
   '/',
   csrfProtection,
   asyncRoute(async (req: any, res: any) => {
-    const redisClient = req.app.get('redis')
-
-    let identity
-    const identityJSON = await redisClient.get(req.session.profile.address)
-    if (identityJSON) {
-      identity = JSON.parse(identityJSON)
-    }
-    console.log({ identity })
+    const identity = await req.getIdentity()
 
     res.render('list-devices', {
       csrfToken: req.csrfToken(),
       action: urljoin(process.env.BASE_URL || '', '/list-devices'),
-      username: req.session.profile.name || req.session.profile.ensName,
-      devices: identity.devices
+      username: identity?.name,
+      devices: identity?.devices
     })
   })
 )

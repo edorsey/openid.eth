@@ -22,6 +22,7 @@ import addDevice from './routes/add-device'
 import loginDevice from './routes/login-device'
 import listDevices from './routes/list-devices'
 import webfinger from './routes/webfinger'
+import asyncRoute from './helpers/async-route'
 
 const RedisStore = connectRedis(session)
 const redisClient = redis.createClient({
@@ -82,14 +83,111 @@ webauthnRouter.get('/', (req, res) => {
 })
 app.use('/webauthn', webauthn.initialize())
 
-app.use((req: any, res, next) => {
-  if (req.session.profile) {
-    res.locals.profileJSON = JSON.stringify(req.session.profile, null, 2)
-    res.locals.profile = req.session.profile
+app.use((req: any, res: any, next: NextFunction) => {
+  const redisClient = req.app.get('redis')
+
+  const getIdentity = async (addr) => {
+    const address = addr || req.session.address || req.session.profile?.address
+    console.log({ address })
+    if (!address) return undefined
+
+    const identityJSON = await redisClient.get(address)
+    if (!identityJSON) return undefined
+
+    const identity = JSON.parse(identityJSON)
+    return identity
   }
+
+  const getProfile = async (addr) => {
+    const identity = await getIdentity(addr)
+
+    if (!identity) {
+      return undefined
+    }
+
+    const {
+      address,
+      chain,
+      name,
+      nameService,
+      email,
+      url,
+      twitter,
+      authenticatedAt,
+      identifiedAt,
+      signedUpAt
+    } = identity
+
+    return {
+      address,
+      chain,
+      name,
+      nameService,
+      email,
+      url,
+      twitter,
+      authenticatedAt,
+      identifiedAt,
+      signedUpAt
+    }
+  }
+
+  const saveIdentity = async (address, identity) => {
+    if (!identity) {
+      identity = address
+      address = req.session.address || req.session.profile.address
+    }
+
+    if (!address) {
+      throw new Error('Could not determine an address')
+    }
+
+    await redisClient.set(address, JSON.stringify(identity))
+
+    return identity
+  }
+
+  const updateIdentity = async (address, update) => {
+    if (!update) {
+      update = address
+      address = req.session.address || req.session.profile.address
+    }
+
+    if (!address) {
+      throw new Error('Could not determine an address')
+    }
+
+    const existingIdentity = await getIdentity(address)
+
+    const updatedIdentity = {
+      ...existingIdentity,
+      update
+    }
+
+    const identity = await saveIdentity(address, updatedIdentity)
+
+    return identity
+  }
+
+  req.getIdentity = getIdentity
+  req.getProfile = getProfile
+  req.saveIdentity = saveIdentity
+  req.updateIdentity = updateIdentity
 
   next()
 })
+
+app.use(
+  asyncRoute(async (req: any, res, next) => {
+    const profile = await req.getProfile()
+    if (profile) {
+      res.locals.profileJSON = JSON.stringify(profile, null, 2)
+      res.locals.profile = profile
+    }
+
+    next()
+  })
+)
 
 app.use('/', routes)
 app.use('/signup', signup)

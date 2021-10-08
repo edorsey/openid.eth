@@ -21,13 +21,13 @@ router.get(
 
     let deviceChallenge
     let deviceChallengeSignature
-    if (req.session.profile?.address) {
+    if (req.session.address) {
       deviceChallenge = await generateChallenge()
 
       await redisClient.set(
         deviceChallenge,
         JSON.stringify({
-          address: req.session.profile.address
+          address: req.session.address
         })
       )
 
@@ -84,12 +84,6 @@ router.post(
       throw new Error('Invalid challenge')
     }
 
-    let identity
-    const identityJSON = await redisClient.get(challengeAddress)
-    if (identityJSON) {
-      identity = JSON.parse(identityJSON)
-    }
-
     const { address } = JSON.parse(cachedChallengeJSON)
 
     if (challengeAddress !== address) {
@@ -99,7 +93,6 @@ router.post(
     }
 
     console.log({
-      identity,
       address,
       deviceChallenge,
       deviceChallengeSignature,
@@ -117,14 +110,10 @@ router.post(
       )
     }
 
+    const identity = req.getIdentity(challengeAddress)
+
     if (!identity) {
-      identity = {
-        name: req.session.profil?.ensName,
-        address: challengeAddress,
-        url: req.session.profile?.url,
-        nameService: 'ENS',
-        chain: 'ETH'
-      }
+      throw new Error('Identity not found')
     }
 
     if (!identity.devices) {
@@ -137,21 +126,10 @@ router.post(
       deviceCredentialClientData
     })
 
-    await redisClient.set(challengeAddress, JSON.stringify(identity))
+    await req.saveIdentity(challengeAddress, identity)
 
-    if (!req.session.profile?.address) {
-      req.session.profile = {
-        ensName: identity.name,
-        name: identity.name,
-        chain: identity.chain,
-        nameService: identity.nameService,
-        address: challengeAddress,
-        email: identity.email,
-        url: identity.url,
-        twitter: identity.twitter,
-        authenticatedWithCredentialId: deviceCredentialID,
-        authenticatedAt: new Date()
-      }
+    if (!req.session?.address) {
+      req.session.address = challengeAddress
     }
 
     res.redirect('/list-devices')

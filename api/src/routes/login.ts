@@ -124,6 +124,7 @@ router.post(
     const url = await resolver.getText('url')
     const twitter = await resolver.getText('com.twitter')
 
+    res.session.address = address
     req.session.profile = {
       idChallenge,
       idSignature: req.body.signature,

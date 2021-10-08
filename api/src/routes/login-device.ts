@@ -21,11 +21,13 @@ router.get(
   '/',
   csrfProtection,
   asyncRoute(async (req: any, res: any) => {
+    const identity = await req.getIdentity()
+
     res.render('login-device', {
       csrfToken: req.csrfToken(),
       action: urljoin(process.env.BASE_URL || '', '/login-device'),
       deviceChallenge: await generateChallenge(),
-      username: req.session?.profile?.name
+      username: identity?.name
     })
   })
 )
@@ -65,7 +67,13 @@ router.post(
       deviceClientDataJSON = base64url.decode(req.body.deviceClientDataJSON)
     }
 
-    const addressForProvidedUsername = await provider.resolveName(username)
+    let addressForProvidedUsername
+    try {
+      addressForProvidedUsername = await provider.resolveName(username)
+    } catch (err) {
+      console.error(err)
+      throw new Error('Failed to lookup username')
+    }
 
     console.log('LOGGING IN DEVICE', req.body, {
       deviceCredentialID,
@@ -75,13 +83,10 @@ router.post(
       deviceClientDataJSON
     })
 
-    const identityJSON = await redisClient.get(addressForProvidedUsername)
-    const identity = JSON.parse(identityJSON)
+    const identity = await req.getIdentity(addressForProvidedUsername)
     if (!identity) {
       throw new Error('Identity not found')
     }
-
-    console.log(identity, identity.devices)
 
     const deviceCredential = identity.devices?.find(
       (device) => device.deviceCredentialID === deviceCredentialID
@@ -90,12 +95,7 @@ router.post(
       throw new Error('Device credential not found')
     }
 
-    req.session.profile = {
-      ...identity,
-      ensName: identity.name,
-      authenticatedWithCredentialId: deviceCredentialID,
-      authenticatedAt: new Date()
-    }
+    req.session.address = addressForProvidedUsername
 
     res.redirect('/profile')
   })

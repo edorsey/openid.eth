@@ -34,6 +34,8 @@ router.get(
 )
 
 router.post('/', csrfProtection, async (req: any, res: any) => {
+  const redisClient = req.app.get('redis')
+
   const { signature } = req.body
   const { idChallenge } = req.session
 
@@ -47,9 +49,9 @@ router.post('/', csrfProtection, async (req: any, res: any) => {
   const url = await resolver.getText('url')
   const twitter = await resolver.getText('com.twitter')
 
-  req.session.profile = {
+  const profile = {
     idChallenge,
-    idSignature: req.body.signature,
+    idSignature: signature,
     ensName,
     name: ensName,
     chain: 'ETH',
@@ -58,8 +60,13 @@ router.post('/', csrfProtection, async (req: any, res: any) => {
     email,
     url,
     twitter,
-    authenticatedAt: new Date()
+    identifiedAt: new Date(), // I think signup/registration should be called identification, since registration technically happens on chain
+    signedUpAt: new Date()
   }
+
+  req.session.address = address
+
+  await req.updateIdentity(address, profile)
 
   res.redirect('/profile')
 })

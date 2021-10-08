@@ -48,8 +48,8 @@ async function addDevice(profile, challenge) {
       },
       user: {
         id: btoa(profile.address),
-        name: profile.ensName,
-        displayName: profile.ensName
+        name: profile.name,
+        displayName: profile.name
       },
       pubKeyCredParams: [
         {
