@@ -60,6 +60,8 @@ async function addDevice(profile, challenge) {
     }
   }
 
+  console.log(JSON.stringify(opts, null, 2))
+
   const credential = await webauthn.create(opts)
 
   return credential
@@ -117,10 +119,15 @@ addLocalDeviceButton.addEventListener('click', async (e) => {
 
 const addRemoteDeviceButton = document.querySelector('#addRemoteDevice')
 const remoteDeviceQRCodeDiv = document.querySelector('#remoteDeviceQRCode')
+const remoteDeviceURLInput = document.querySelector('#remoteDeviceURL')
+const csrfInput = document.querySelector('#csrf')
 addRemoteDeviceButton.addEventListener('click', async (e) => {
+  const url = `${window.location.href}?deviceChallenge=${deviceChallengeInput.value}&deviceChallengeSignature=${deviceChallengeSignatureInput.value}`
   new QRCode(remoteDeviceQRCodeDiv, {
-    text: window.location.href
+    text: url
   })
+  remoteDeviceURLInput.value = url
+
   moveToStep(3)
 })
 
@@ -139,4 +146,20 @@ function moveToStep(n) {
       el.classList.add('is-hidden')
     }
   })
+}
+
+if (deviceChallengeInput.value && deviceChallengeSignatureInput.value) {
+  const address = ethers.utils.verifyMessage(
+    deviceChallengeInput.value,
+    deviceChallengeSignatureInput.value
+  )
+
+  if (!window.profile) {
+    window.profile = {
+      address
+    }
+  }
+
+  console.log({ address })
+  moveToStep(2)
 }

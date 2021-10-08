@@ -17,14 +17,32 @@ router.get(
   '/',
   csrfProtection,
   asyncRoute(async (req: any, res: any) => {
-    const deviceChallenge = await generateChallenge()
+    const redisClient = req.app.get('redis')
 
-    req.session.deviceChallenge = deviceChallenge
+    let deviceChallenge
+    let deviceChallengeSignature
+    if (req.session.profile?.address) {
+      deviceChallenge = await generateChallenge()
+
+      await redisClient.set(
+        deviceChallenge,
+        JSON.stringify({
+          address: req.session.profile.address
+        })
+      )
+
+      await redisClient.expire(deviceChallenge, 5 * 60)
+    } else if (req.query.deviceChallenge) {
+      deviceChallenge = req.query.deviceChallenge
+      deviceChallengeSignature = req.query.deviceChallengeSignature
+    }
 
     res.render('add-device', {
       csrfToken: req.csrfToken(),
       action: urljoin(process.env.BASE_URL || '', '/add-device'),
-      deviceChallenge
+      deviceChallenge,
+      deviceChallengeSignature,
+      profile: {}
     })
   })
 )
@@ -35,20 +53,7 @@ router.post(
   asyncRoute(async (req: any, res: any) => {
     const redisClient = req.app.get('redis')
 
-    let identity
-    const identityJSON = await redisClient.get(req.session.profile.address)
-    if (identityJSON) {
-      identity = JSON.parse(identityJSON)
-    }
-    console.log({ identity })
-
-    // The challenge is now a hidden input field, so let's take it from the request body instead
-    const expectedDeviceChallenge = req.session.deviceChallenge
-    delete req.session.deviceChallenge
-    console.log('ADDING DEVICE', req.body, expectedDeviceChallenge)
-
     const {
-      address,
       deviceChallenge,
       deviceChallengeSignature,
       deviceCredentialID,
@@ -56,12 +61,16 @@ router.post(
       deviceCredentialClientDataJSON
     } = req.body
 
-    if (!req.session.profile.address) {
-      throw new Error('No address in session')
-    }
-
-    if (deviceChallenge !== expectedDeviceChallenge) {
-      throw new Error('deviceChallenge does not match.')
+    if (
+      !(
+        deviceChallenge &&
+        deviceChallengeSignature &&
+        deviceCredentialID &&
+        deviceCredential &&
+        deviceCredentialClientDataJSON
+      )
+    ) {
+      throw new Error('Required property no specified')
     }
 
     const challengeAddress = ethers.utils.verifyMessage(
@@ -69,13 +78,28 @@ router.post(
       deviceChallengeSignature
     )
 
-    if (challengeAddress !== req.session.profile.address) {
+    const cachedChallengeJSON = await redisClient.get(deviceChallenge)
+
+    if (!cachedChallengeJSON) {
+      throw new Error('Invalid challenge')
+    }
+
+    let identity
+    const identityJSON = await redisClient.get(challengeAddress)
+    if (identityJSON) {
+      identity = JSON.parse(identityJSON)
+    }
+
+    const { address } = JSON.parse(cachedChallengeJSON)
+
+    if (challengeAddress !== address) {
       throw new Error(
         "Address doesn't match address calculated from deviceChallengeSignature"
       )
     }
 
     console.log({
+      identity,
       address,
       deviceChallenge,
       deviceChallengeSignature,
@@ -95,9 +119,9 @@ router.post(
 
     if (!identity) {
       identity = {
-        name: req.session.profile.ensName,
-        address: req.session.profile.address,
-        website: req.session.profile.website,
+        name: req.session.profil?.ensName,
+        address: challengeAddress,
+        url: req.session.profile?.url,
         nameService: 'ENS',
         chain: 'ETH'
       }
@@ -113,7 +137,22 @@ router.post(
       deviceCredentialClientData
     })
 
-    await redisClient.set(req.session.profile.address, JSON.stringify(identity))
+    await redisClient.set(challengeAddress, JSON.stringify(identity))
+
+    if (!req.session.profile?.address) {
+      req.session.profile = {
+        ensName: identity.name,
+        name: identity.name,
+        chain: identity.chain,
+        nameService: identity.nameService,
+        address: challengeAddress,
+        email: identity.email,
+        url: identity.url,
+        twitter: identity.twitter,
+        authenticatedWithCredentialId: deviceCredentialID,
+        authenticatedAt: new Date()
+      }
+    }
 
     res.redirect('/list-devices')
   })

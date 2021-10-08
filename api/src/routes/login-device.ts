@@ -34,15 +34,15 @@ router.post(
   '/',
   csrfProtection,
   asyncRoute(async (req: any, res: any) => {
+    const redisClient = req.app.get('redis')
+
     const { username } = req.body
     if (!username) {
       throw new Error('No username provided')
     }
 
     let deviceUserHandle
-    if (!req.body.deviceUserHandle) {
-      throw new Error('No device user handle provided')
-    } else {
+    if (req.body.deviceUserHandle) {
       deviceUserHandle = base64url.decode(req.body.deviceUserHandle)
     }
 
@@ -75,25 +75,24 @@ router.post(
       deviceClientDataJSON
     })
 
-    if (addressForProvidedUsername !== deviceUserHandle) {
-      throw new Error('Username not associated with address')
+    const identityJSON = await redisClient.get(addressForProvidedUsername)
+    const identity = JSON.parse(identityJSON)
+    if (!identity) {
+      throw new Error('Identity not found')
     }
 
-    const resolver = await provider.getResolver(username)
+    console.log(identity, identity.devices)
 
-    const email = await resolver.getText('email')
-    const url = await resolver.getText('url')
-    const twitter = await resolver.getText('com.twitter')
+    const deviceCredential = identity.devices?.find(
+      (device) => device.deviceCredentialID === deviceCredentialID
+    )
+    if (!deviceCredential) {
+      throw new Error('Device credential not found')
+    }
 
     req.session.profile = {
-      ensName: username,
-      name: username,
-      chain: 'ETH',
-      nameService: 'ENS',
-      address: deviceUserHandle,
-      email,
-      url,
-      twitter,
+      ...identity,
+      ensName: identity.name,
       authenticatedWithCredentialId: deviceCredentialID,
       authenticatedAt: new Date()
     }

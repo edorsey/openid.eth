@@ -24,17 +24,24 @@ authButton.addEventListener('click', async (e) => {
 
     const account = await result.json()
 
-    allowCredentials = account.properties.devices.map((deviceCredentialID) => {
-      return {
-        type: 'public-key',
-        id: deviceCredentialID
-      }
-    })
+    allowCredentials = account.properties.devices
+      .filter((deviceCredentialID) => {
+        return (
+          deviceCredentialID !==
+          '***REMOVED***'
+        )
+      })
+      .map((deviceCredentialID) => {
+        return {
+          type: 'public-key',
+          id: deviceCredentialID
+        }
+      })
   }
 
   const opts = {
     publicKey: {
-      userVerification: 'required',
+      userVerification: 'preferred',
       rpId: window.config.domain,
       challenge: deviceChallengeInput.value,
       allowCredentials
@@ -43,6 +50,8 @@ authButton.addEventListener('click', async (e) => {
 
   try {
     const credential = await webauthn.get(opts)
+
+    console.log('CRED', credential)
 
     deviceCredentialIDInput.value = credential.id
     deviceAuthenticatorDataInput.value = credential.response.authenticatorData

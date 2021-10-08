@@ -7,7 +7,7 @@ block content
         h1.has-text-weight-semibold.is-size-2.has-text-centered.mb-4.mt-4 Add Device
 
         form#addDeviceForm(action=action, method='POST')
-          input(type='hidden', name='_csrf', value=csrfToken)
+          input#csrf(type='hidden', name='_csrf', value=csrfToken)
 
           #step-1.has-text-centered.mb-5
             input#deviceChallenge.input(
@@ -20,17 +20,17 @@ block content
               type='hidden',
               value=profile.idChallenge
             )
+            input#deviceChallengeSignature.input(
+              name='deviceChallengeSignature',
+              type='hidden',
+              value=deviceChallengeSignature
+            )
             p.mb-5 First, assert that you want to delegate your identity to a new device.
             button#assertDevice.button.is-primary(type='button') New device
             #waitingForSignature.is-hidden.mt-4 Waiting for signature from MetaMask
             #metaMaskError.is-hidden.mt-4 No MetaMask detected
 
           #step-2.is-hidden
-            input#deviceChallengeSignature.input(
-              name='deviceChallengeSignature',
-              type='hidden',
-              value=deviceChallengeSignature
-            )
             input#deviceCredentialID.input(
               name='deviceCredentialID',
               type='hidden',
@@ -54,6 +54,15 @@ block content
             p.mt-5.mb-5 Scan this QR Code with the device you wish to delegate access to.
             .is-flex.is-justify-content-center
               #remoteDeviceQRCode
+
+            div
+              .field.mb-6.mt-5
+                .control
+                  input#remoteDeviceURL.input(
+                    name='remoteDeviceURL',
+                    type='text'
+                  )
+
             p.mt-5.mb-5 Expires in 5 minutes
 
           #step-4.is-hidden
