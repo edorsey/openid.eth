@@ -62,6 +62,7 @@ authButton.addEventListener('click', async (e) => {
     loginForm.submit()
   } catch (err) {
     console.error(err)
-    loginErrorDiv.textContent = 'Error getting credential, try again.'
+    loginErrorDiv.textContent =
+      err.message || 'Error getting credential, try again.'
   }
 })
