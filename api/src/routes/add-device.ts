@@ -33,8 +33,15 @@ router.get(
 
       await redisClient.expire(deviceChallenge, 5 * 60)
     } else if (req.query.deviceChallenge) {
-      deviceChallenge = req.query.deviceChallenge
-      deviceChallengeSignature = req.query.deviceChallengeSignature
+      const cachedChallengeJSON = await redisClient.get(
+        req.query.deviceChallenge
+      )
+      if (cachedChallengeJSON) {
+        deviceChallenge = req.query.deviceChallenge
+        deviceChallengeSignature = req.query.deviceChallengeSignature
+      } else {
+        throw new Error('Challenge expired')
+      }
     }
 
     res.render('add-device', {
