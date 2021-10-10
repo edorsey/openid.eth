@@ -51,8 +51,6 @@ authButton.addEventListener('click', async (e) => {
   try {
     const credential = await webauthn.get(opts)
 
-    console.log('CRED', credential)
-
     deviceCredentialIDInput.value = credential.id
     deviceAuthenticatorDataInput.value = credential.response.authenticatorData
     deviceClientDataJSONInput.value = credential.response.clientDataJSON
