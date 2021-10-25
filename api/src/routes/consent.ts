@@ -2,7 +2,6 @@ import express from 'express'
 import url from 'url'
 import urljoin from 'url-join'
 import csrf from 'csurf'
-import { ethers } from 'ethers'
 import { hydraAdmin } from '../config'
 import { ConsentRequestSession } from '@oryd/hydra-client'
 
@@ -48,8 +47,6 @@ router.get(
 
     const address = consentRequest.subject
 
-    console.log({ challenge, query, consentRequest })
-
     const {
       name: ens,
       email: ensEmail,
@@ -82,28 +79,24 @@ router.get(
         session: {
           // This data will be available when introspecting the token. Try to avoid sensitive information here,
           // unless you limit who can introspect tokens.
-          // accessToken: { foo: 'bar' },
-          // This data will be available in the ID token.
-          // idToken: { baz: 'bar' },
           access_token: {
-            ens,
-            address
+            ensName: ens,
+            ensAddress: address,
+
+            preferred_username: ens || address
           },
           id_token: {
             email: ensEmail,
-            url: ensURL,
+            website: ensURL,
             twitter: ensTwitter,
-            address,
-            ens
+
+            ensAddress: address,
+            ensName: ens,
+
+            preferred_username: ens || address
           }
         }
       })
-
-      console.log(
-        'ACCEPT CONSENT REQUEST',
-        acceptConsentRequestResponse.redirect_to,
-        acceptConsentRequestResponse
-      )
 
       res.redirect(acceptConsentRequestResponse.redirect_to)
 
@@ -176,17 +169,20 @@ router.post(
       // This data will be available when introspecting the token. Try to avoid sensitive information here,
       // unless you limit who can introspect tokens.
       access_token: {
-        address,
-        ens
-      },
+        ensName: ens,
+        ensAddress: address,
 
-      // This data will be available in the ID token.
+        preferred_username: ens || address
+      },
       id_token: {
-        address,
-        ens,
         email: ensEmail,
-        url: ensURL,
-        twitter: ensTwitter
+        website: ensURL,
+        twitter: ensTwitter,
+
+        ensAddress: address,
+        ensName: ens,
+
+        preferred_username: ens || address
       }
     }
 
