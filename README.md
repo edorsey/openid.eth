@@ -6,7 +6,11 @@ Will use this to hook into Keycloak to allow users to login to their account wit
 
 ## Demo
 
-<video src='demo.mp4' controls></video>
+https://github.com/user-attachments/assets/f3996aaa-d0eb-4909-a6cc-0ad0921295db
+
+## Discontinued
+
+I discontinued work on this after finding out about the [SpruceID SIWE-OIDC](https://github.com/spruceid/siwe-oidc) implementation.
 
 ## How it makes money
 
